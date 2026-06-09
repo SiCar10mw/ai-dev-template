@@ -4,10 +4,14 @@
     ".claude/agents/docs-drift-guardian.md",
     ".claude/agents/governance-control-mapper.md",
     ".claude/agents/independent-reviewer.md",
+    ".claude/agents/observability-fleet-health.md",
     ".claude/agents/orchestrator.md",
     ".claude/agents/privacy-data-classifier.md",
+    ".claude/agents/release-supply-chain-steward.md",
     ".claude/agents/security-reviewer.md",
-    ".claude/agents/spec-author.md"
+    ".claude/agents/spec-author.md",
+    ".claude/agents/test-author.md",
+    ".claude/agents/threat-modeler.md"
   ],
   "artifact": "AIBOM",
   "generated_by": "scripts/gen_aibom.py",

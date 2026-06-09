@@ -1,0 +1,17 @@
+{
+  "concurrency_cap": 2,
+  "worktree_root": "../.agent-worktrees",
+  "claim_lock_dir": ".fleet/claims",
+  "merge_queue_dir": ".fleet/merge-queue",
+  "budget": {
+    "max_parallel_agents": 2,
+    "max_tokens_per_agent": 120000,
+    "max_total_tokens": 240000
+  },
+  "rules": [
+    "Each worker claims exactly one item through an atomic lock file.",
+    "Each worker uses a per-agent branch and isolated git worktree.",
+    "No two active workers may own the same path set.",
+    "Merges are serialized through the merge queue."
+  ]
+}

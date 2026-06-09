@@ -19,7 +19,9 @@ REQUIRED_FILES = [
     "CLAUDE.md",
     "GEMINI.md",
     "SECURITY.md",
+    "SECRETS.md",
     "CODEOWNERS",
+    ".env.example",
     "BACKLOG.md",
     ".claude/agents/backlog-worker.md",
     ".claude/agents/independent-reviewer.md",
@@ -29,6 +31,10 @@ REQUIRED_FILES = [
     ".claude/agents/privacy-data-classifier.md",
     ".claude/agents/spec-author.md",
     ".claude/agents/docs-drift-guardian.md",
+    ".claude/agents/threat-modeler.md",
+    ".claude/agents/test-author.md",
+    ".claude/agents/release-supply-chain-steward.md",
+    ".claude/agents/observability-fleet-health.md",
     ".github/copilot-instructions.md",
     ".github/instructions/python.instructions.md",
     ".github/instructions/docs.instructions.md",
@@ -50,6 +56,7 @@ REQUIRED_FILES = [
     "docs/agent-fireteam.md",
     "docs/documentation-gate.md",
     "docs/generated-artifacts.md",
+    "docs/parallel-agents.md",
     "docs/docs-impact.md",
     "docs/mcp-and-tooling.md",
     "docs/diagramming.md",
@@ -66,6 +73,8 @@ REQUIRED_FILES = [
     "config/approved-models.example.json",
     "config/m365-publisher.example.json",
     "config/mandatory-principles.json",
+    "config/fleet.example.json",
+    "queue/backlog-queue.example.json",
     "skills/README.md",
     "skills/example_skill/SKILL.md",
     ".mcp.json",
@@ -87,6 +96,9 @@ REQUIRED_FILES = [
     "scripts/check_principle_tripwires.py",
     "scripts/check_profile_boundary.py",
     "scripts/check_no_secrets.py",
+    "scripts/claim_backlog_item.py",
+    "scripts/dispatch_agents.py",
+    "scripts/merge_queue.py",
     "scripts/gen_all_artifacts.py",
     "scripts/gen_aibom.py",
     "scripts/gen_governance_evidence.py",
@@ -130,6 +142,9 @@ MANDATORY_PHRASES = [
     "two-domain governance",
     "three-tier docs boundary",
     "personal-scale default",
+    "parallel agents",
+    "security starts at spec time",
+    "secrets never enter",
 ]
 
 
@@ -253,6 +268,10 @@ def check_agent_roster() -> list[str]:
         "privacy-data-classifier",
         "spec-author",
         "docs-drift-guardian",
+        "threat-modeler",
+        "test-author",
+        "release-supply-chain-steward",
+        "observability-fleet-health",
     ):
         if agent not in agents:
             errors.append(f"AGENTS.md missing required fireteam agent: {agent}")
@@ -283,12 +302,26 @@ def check_gitleaks_and_mypy() -> list[str]:
         errors.append(".pre-commit-config.yaml must include gitleaks")
     if "gitleaks" not in workflow:
         errors.append(".github/workflows/ci.yml must include a blocking gitleaks job")
+    if "full-history" not in workflow:
+        errors.append(".github/workflows/ci.yml must include a blocking full-history secret scan job")
     if "mypy ai_dev_template scripts skills" not in precommit:
         errors.append(".pre-commit-config.yaml must include mypy")
     if "make type-check" not in workflow:
         errors.append(".github/workflows/ci.yml must include a blocking type-check job")
     if "mypy ai_dev_template scripts skills" not in ci_script:
         errors.append("scripts/ci_check.sh must run mypy")
+    return errors
+
+
+def check_spec_security_left() -> list[str]:
+    spec = _read("specs/TEMPLATE/spec.md").lower()
+    constitution = _read("CONSTITUTION.md").lower()
+    errors = []
+    for phrase in ("threat model", "abuse cases", "assume breach"):
+        if phrase not in spec:
+            errors.append(f"spec template missing security-from-left phrase: {phrase}")
+    if "assume breach" not in constitution:
+        errors.append("CONSTITUTION.md must state assume breach")
     return errors
 
 
@@ -307,6 +340,7 @@ def main() -> int:
         check_agent_roster,
         check_generated_artifact_gate,
         check_gitleaks_and_mypy,
+        check_spec_security_left,
     ):
         errors.extend(check())
 

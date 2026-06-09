@@ -21,6 +21,9 @@ The template bakes in:
 - Gitleaks and mypy gates in pre-commit and CI.
 - Generated evidence artifacts with a drift tripwire.
 - M365 governance integration patterns for Entra, Purview, SharePoint, and Teams.
+- Parallel-agent mechanics with atomic claims, worktree isolation, concurrency cap, and merge queue.
+- Security-from-the-left with spec-time threat modeling and abuse cases.
+- A no-secrets policy with pre-commit, CI, full-history scanning, and runtime context rules.
 
 ## Start a New Project
 
@@ -112,4 +115,6 @@ kept current, audience-scoped, reviewed, and built from repository source.
 | `docs/adr/` | Architecture decision records |
 | `docs/threat-model.md` | Baseline threat model |
 | `SECURITY.md` | Security reporting and baseline policy |
+| `SECRETS.md` | No-secret policy, credential shape, rotation, and runtime handling |
+| `docs/parallel-agents.md` | Safe parallel sub-agent mechanics |
 | `generated/` | Committed generated artifacts checked by drift tripwire |

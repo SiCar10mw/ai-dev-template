@@ -1,0 +1,12 @@
+{
+  "items": [
+    {
+      "id": "ITEM-001",
+      "title": "Example queued backlog item",
+      "status": "backlog",
+      "paths": [
+        "README.md"
+      ]
+    }
+  ]
+}

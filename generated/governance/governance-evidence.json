@@ -21,13 +21,13 @@
   "generated_by": "scripts/gen_governance_evidence.py",
   "schema_version": "0.1",
   "source_hashes": {
-    ".github/workflows/ci.yml": "acb3d087792c7dc2ad057321a9ba22dd34ca721460a285cb15f515a12e03fb2f",
+    ".github/workflows/ci.yml": "d7e76a72b39c1d28eae6824c678941db01f2c583661e861159d9f37f3d4e4462",
     ".pre-commit-config.yaml": "aed4fb802e0fec8a6c3740a42ce004a29b4a173d3c36773d00650e640258f5a5",
-    "AGENTS.md": "d18f534ae7f86275775ce964361b2f0111dfc1c69cc311e5f2ec6511e8599ae9",
-    "CONSTITUTION.md": "cb7544f682d510f104d35d68142ab6604fc008d6c8cac696abbdd66b9d5b13f4",
+    "AGENTS.md": "b936432afe21fb0aa2d992121147a1bc960d4f90f16361ab20ad0e5472654e9d",
+    "CONSTITUTION.md": "f62397b2acad468fc314d0b76d539d5abcd75b1bcf854ce346ceb3d7380eca10",
     "GOVERNANCE.md": "5ec5b9f0696a5633f3c7f74837afabe5f5100cb30105b2601c717a1459c43438",
-    "SECURITY.md": "703aab80d6d95e87fb30d4d9ce5a1d81e8d0b62effefb27cb1e723f6e100cb21",
-    "STANDARDS.md": "872d1506c53030e07aecc2e09038714f7a14fa898d53789e35e8a496589d41ee",
+    "SECURITY.md": "48fcb65b6192ad3140e85b73268f183535e365744c8bbe30917d38452aeda016",
+    "STANDARDS.md": "b8f5955f8bbd1e11fb01d915aa6a04c4b79f4c807b8c5473110db5818961f344",
     "pyproject.toml": "c1a1471ea0a5cd5ac7b0a09cc70605458ddcd1d41f2af5da99324fbdda43f63d"
   }
 }

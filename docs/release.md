@@ -7,6 +7,7 @@ Release status is determined by deterministic gates and human approval, not by a
 - `make check` passes.
 - Required branch protections pass.
 - Gitleaks and mypy gates pass.
+- Gitleaks full-history scan passes.
 - Generated artifact drift tripwire passes.
 - Documentation impact is complete.
 - Security-sensitive changes have independent review.

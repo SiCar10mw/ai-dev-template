@@ -25,6 +25,7 @@ You are the worker for the Symphony backlog loop. The human curates `BACKLOG.md`
 - No external-system writes without explicit human approval.
 - No MCP-backed external writes without explicit human approval.
 - Every implementation change must update docs or `docs/docs-impact.md`.
+- Parallel work requires an isolated worktree or container, atomic claim, per-agent branch, and serialized merge queue.
 - Run `make check` before handoff.
 
 ## Loop

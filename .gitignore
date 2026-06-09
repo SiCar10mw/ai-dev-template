@@ -1,5 +1,7 @@
 .DS_Store
 .env
+.fleet/
+.agent-worktrees/
 .venv/
 __pycache__/
 *.py[cod]

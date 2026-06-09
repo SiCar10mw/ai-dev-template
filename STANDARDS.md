@@ -50,6 +50,9 @@ Example: Python projects use `ruff` and `pytest`; a TypeScript project might use
 | Governed generated-output publication is dry-run by default and real external publication is profile-gated. | Optional SharePoint/Teams publisher stub, `scripts/publish_m365_stub.py` |
 | Framework anchoring maps principles to AI governance frameworks and enforcement locations. | `docs/ai-governance-mapping.md` |
 | Personal-scale default: core checks run without M365, Entra, Purview, or any enterprise tenant. | `scripts/check_profile_boundary.py`, optional corporate profile docs |
+| Parallel agents are isolated, atomically claimed, concurrency-capped, budgeted, and merge-serialized. | git worktrees, `scripts/claim_backlog_item.py`, `scripts/dispatch_agents.py`, `scripts/merge_queue.py`, `docs/parallel-agents.md` |
+| Security starts at spec time with assume breach, abuse cases, and threat modeling. | `.claude/agents/threat-modeler.md`, `specs/TEMPLATE/spec.md`, red/blue/purple fireteam |
+| Secrets never enter repository files, logs, stdout, generated artifacts, or LLM context. | `SECRETS.md`, `.env.example`, Gitleaks pre-commit, CI, full-history scan, runtime sanitizer |
 | Blast-radius check before edits. | `docs/safety-habits.md`, `CLAUDE.md`, `AGENTS.md` |
 | Look-before-you-delete. | `docs/safety-habits.md`, `CLAUDE.md`, `.claude/agents/backlog-worker.md` |
 | Progressive discovery for agent capabilities, distinct from progressive loading in UI. | `skills/README.md`, `skills/example_skill/SKILL.md`, `docs/methodology.md` |
@@ -72,3 +75,5 @@ When replacing a recommended tool, document the replacement in this file and pre
 | Microsoft Entra ID service principal | GitHub App, workload identity, managed identity | Scoped machine-user identity |
 | Microsoft Purview labels + DLP | Enterprise DLP/classification equivalent | Tenant-level data governance |
 | SharePoint/Teams | Confluence, Google Drive, enterprise records system | Corporate-governed publication |
+| git worktrees | containers, ephemeral VMs | Parallel-agent isolation |
+| lock-file queue | database queue, issue queue with atomic API claim | Atomic backlog claim |

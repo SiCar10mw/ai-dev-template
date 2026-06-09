@@ -1,6 +1,6 @@
 # Threat Model
 
-This baseline threat model is generic. Project teams should update it during bootstrap and whenever architecture,
+This baseline threat model is generic. Assume breach. Project teams should update it during bootstrap and whenever architecture,
 external tools, data boundaries, or deployment targets change.
 
 ## Assets

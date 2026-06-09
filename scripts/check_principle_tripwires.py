@@ -115,6 +115,8 @@ def check_standards_registry_alignment(
 def tripwire_is_resolvable(tripwire: str, corpus: str, root: Path = ROOT) -> bool:
     """Return whether a tripwire points to a real file, command, job, test, or conformance marker."""
     candidate = tripwire.split(":", 1)[0]
+    if (root / candidate).exists():
+        return True
     if candidate.endswith((".py", ".md", ".json", ".toml", ".yaml", ".yml")) and (root / candidate).exists():
         return True
     if candidate.startswith(("tests/", "generated/", "config/", "docs/", ".github/", ".claude/")):

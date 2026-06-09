@@ -309,6 +309,27 @@
       "profile": "core",
       "tripwires": ["check_profile_boundary.py", "scripts/ci_check.sh"],
       "negative_probe": "add enterprise-only command to make check"
+    },
+    {
+      "id": "P45",
+      "statement": "Parallel agents are isolated, atomically claimed, concurrency-capped, budgeted, and merge-serialized.",
+      "profile": "core",
+      "tripwires": ["tests/unit/test_fleet_claims.py", "docs/parallel-agents.md", "scripts/claim_backlog_item.py"],
+      "negative_probe": "allow two workers to claim the same backlog item"
+    },
+    {
+      "id": "P46",
+      "statement": "Security starts at spec time with assume breach, abuse cases, and threat modeling.",
+      "profile": "core",
+      "tripwires": ["specs/TEMPLATE/spec.md", ".claude/agents/threat-modeler.md", "CONSTITUTION.md"],
+      "negative_probe": "remove threat model and abuse cases from spec template"
+    },
+    {
+      "id": "P47",
+      "statement": "Secrets never enter repository files, logs, stdout, generated artifacts, or LLM context.",
+      "profile": "core",
+      "tripwires": ["SECRETS.md", ".env.example", ".github/workflows/ci.yml", ".pre-commit-config.yaml"],
+      "negative_probe": "add a real secret or remove full-history secret scan job"
     }
   ]
 }

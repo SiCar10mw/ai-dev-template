@@ -8,8 +8,12 @@ Read `CONSTITUTION.md` first. This file defines the agent roster, permitted tool
 |---|---|---|---|
 | orchestrator | `.claude/agents/orchestrator.md` | Routes work through the fireteam, preserves gates, and stops at human approvals. | Read, search, safe shell commands |
 | backlog-worker | `.claude/agents/backlog-worker.md` | Claims one backlog item, implements it through spec/test/PR conventions, moves it to Review, and stops for approval. | Read, edit, shell commands, tests, git branch/commit, pull request creation |
-| security-reviewer | `.claude/agents/security-reviewer.md` | Senior AppSec reviewer for adversarial security review. | Read, search, tests, SAST, secret scan |
-| independent-reviewer | `.claude/agents/independent-reviewer.md` | Refutes primary work through adversarial review for security, correctness, tests, and docs drift. | Read, search, tests, static analysis, review comments |
+| threat-modeler | `.claude/agents/threat-modeler.md` | Red team: offensive abuse cases and attack trees at spec time. | Read, search, threat modeling |
+| security-reviewer | `.claude/agents/security-reviewer.md` | Blue team: senior AppSec review of defenses, gates, and implementation. | Read, search, tests, SAST, secret scan |
+| independent-reviewer | `.claude/agents/independent-reviewer.md` | Purple team: refutes primary work and adjudicates red/blue convergence with a human. | Read, search, tests, static analysis, review comments |
+| test-author | `.claude/agents/test-author.md` | Writes failing tests and golden fixtures before implementation. | Read, edit tests, shell commands |
+| release-supply-chain-steward | `.claude/agents/release-supply-chain-steward.md` | Versioning, SBOM/AIBOM freshness, model and dependency upgrade gates. | Read, search, dependency audit, generated checks |
+| observability-fleet-health | `.claude/agents/observability-fleet-health.md` | Tracks pass rate, queue depth, gate hotspots, and budget health. | Read, search, safe shell commands |
 | governance-control-mapper | `.claude/agents/governance-control-mapper.md` | Maps work to NIST AI RMF, ISO/IEC 42001, EU AI Act tiering, and enforcement boundaries. | Read, search, control mapping |
 | privacy-data-classifier | `.claude/agents/privacy-data-classifier.md` | Flags sensitive data and assigns sensitivity labels. | Read, search, classification |
 | spec-author | `.claude/agents/spec-author.md` | Creates Spec-Kit specify -> plan -> tasks artifacts. | Read, edit specs, search |
@@ -25,6 +29,7 @@ Read `CONSTITUTION.md` first. This file defines the agent roster, permitted tool
 - Keep work scoped to one objective.
 - Use spec-first delivery for features.
 - Use test-driven delivery for code.
+- Run threat modeling and abuse cases at spec time.
 - Run a blast-radius check before edits.
 - Look before deleting files or generated artifacts.
 - Prefer deterministic tools over model judgment for gate results.
@@ -33,6 +38,7 @@ Read `CONSTITUTION.md` first. This file defines the agent roster, permitted tool
 - Update documentation or `docs/docs-impact.md` for every implementation change.
 - Use approved model families only.
 - Keep agent work no-exfil and sensitivity-aware.
+- Run parallel workers only in isolated worktrees or containers with atomic claims and serialized merges.
 - Record audit-relevant decisions, gates, and human approvals in handoff notes.
 - Do not read, print, commit, or summarize secrets.
 - Do not self-approve, self-merge, deploy, publish, delete, or rotate credentials.

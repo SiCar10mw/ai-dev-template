@@ -13,12 +13,15 @@ sensitive system information.
 ## Baseline Security Rules
 
 - External systems are read-only by default.
+- Assume breach during design, implementation, and review.
 - MCP tools that write, publish, share, delete, deploy, approve, merge, or change permissions require explicit human
   approval.
 - Secrets must not be committed.
 - Gitleaks runs in pre-commit and CI.
+- Gitleaks also runs as a full-history scan in CI.
 - mypy runs in pre-commit and CI so type hints are checked.
 - Generated evidence artifacts are drift-checked before merge.
+- Threat modeling and abuse cases start at spec time.
 - Security-sensitive changes require tests, docs impact, and independent review.
 - Deterministic gates decide release and merge readiness.
 

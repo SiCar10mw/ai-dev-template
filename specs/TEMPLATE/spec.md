@@ -30,6 +30,37 @@ As a user of this project, I can complete the primary workflow so that the inten
 - **FR-003**: The system must include at least one negative or regression test when the workflow has a failure mode.
 - **FR-004**: The system must update contributor or public docs when behavior changes.
 
+## Threat Model and Abuse Cases
+
+### Assume Breach Baseline
+
+- External systems are read-only by default.
+- Least privilege applies to every identity, token, MCP server, workflow, and generated output.
+- Secrets are never placed in repository files, logs, stdout, generated artifacts, or LLM context.
+
+### Abuse Cases
+
+1. An attacker supplies malicious input intended to alter model or tool behavior.
+2. An attacker tries to escalate from read-only access to write access.
+3. An attacker attempts to exfiltrate sensitive data through logs, generated docs, or LLM context.
+4. An attacker races another worker for the same file, backlog item, or merge target.
+
+### Attack Tree
+
+- Goal: compromise integrity, confidentiality, or release state.
+  - Abuse external input.
+  - Abuse credentials or over-broad permissions.
+  - Abuse generated evidence or documentation drift.
+  - Abuse parallel worker races.
+
+### Required Mitigations
+
+- Sanitization or validation at trust boundaries.
+- Deterministic tests or golden fixtures for truth claims.
+- Human approval for external writes and high-impact actions.
+- Secret scanning and no-secret runtime handling.
+- Isolated worker execution when parallel agents are used.
+
 ### Key Entities
 
 - **Input**: Data accepted by the workflow.
@@ -45,4 +76,3 @@ As a user of this project, I can complete the primary workflow so that the inten
 
 - The default implementation is local and offline.
 - External writes are out of scope unless explicitly approved.
-

@@ -21,6 +21,7 @@ You turn an idea into reviewable delivery artifacts before implementation.
 - Use `specs/TEMPLATE/spec.md`, `plan.md`, and `tasks.md`.
 - Keep acceptance criteria testable.
 - State current vs target behavior.
+- Include threat model and abuse cases in every meaningful spec.
 - Identify tests, docs, generated artifacts, and governance evidence affected by the work.
 
 ## Output
