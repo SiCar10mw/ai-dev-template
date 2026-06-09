@@ -1,4 +1,4 @@
-.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check no-secrets type-check lint test sast ai-sast dependency-audit documents reference-docx project-brief-deck docs-site-build
+.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check owasp-llm no-secrets type-check lint test sast ai-sast dependency-audit operationalize documents reference-docx project-brief-deck docs-site-build
 
 check:
 	./scripts/ci_check.sh
@@ -23,6 +23,9 @@ profile-boundary:
 corporate-profile-check:
 	AI_DEV_PROFILE=corporate python scripts/check_profile_boundary.py
 
+owasp-llm:
+	python scripts/check_owasp_llm.py
+
 no-secrets:
 	python scripts/check_no_secrets.py
 	pre-commit run gitleaks --all-files --config .pre-commit-config.yaml
@@ -44,6 +47,9 @@ ai-sast:
 
 dependency-audit:
 	pip-audit --requirement requirements.txt --disable-pip --no-deps
+
+operationalize:
+	bash scripts/operationalize.sh
 
 documents: reference-docx project-brief-deck
 

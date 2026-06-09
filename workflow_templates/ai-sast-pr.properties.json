@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template AI-SAST PR",
+  "description": "Run the blocking AI-SAST pull request gate.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Artificial intelligence"]
+}

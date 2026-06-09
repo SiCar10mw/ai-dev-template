@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template CI",
+  "description": "Run the local-equals-CI make check gate.",
+  "iconName": "ai-dev-template",
+  "categories": ["Automation", "Python"]
+}

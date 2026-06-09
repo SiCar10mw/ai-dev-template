@@ -1,0 +1,32 @@
+name: ai-sast-pr
+
+on:
+  pull_request:
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  ai-sast:
+    name: AI-SAST diff gate
+    runs-on: ubuntu-latest
+    env:
+      AI_SAST_MAX_FILES: "40"
+      AI_SAST_MAX_BYTES_PER_FILE: "60000"
+      AI_SAST_MAX_TOTAL_BYTES: "200000"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e ".[dev]"
+      - run: python scripts/check_ai_sast.py --scanner auto --targets . --output ai-sast-findings.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ai-sast-pr-findings
+          path: ai-sast-findings.json
+          if-no-files-found: ignore

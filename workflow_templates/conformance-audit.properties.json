@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template Conformance Audit",
+  "description": "Run template conformance and OWASP LLM coverage audits.",
+  "iconName": "ai-dev-template",
+  "categories": ["Automation", "Security"]
+}

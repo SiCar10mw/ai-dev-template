@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template CodeQL",
+  "description": "Run CodeQL analysis for Python repositories.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Python"]
+}

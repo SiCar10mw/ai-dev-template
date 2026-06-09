@@ -1,7 +1,9 @@
 name: ai-sast-pr
 
 on:
+  workflow_call:
   pull_request:
+  merge_group:
 
 permissions:
   contents: read
@@ -24,10 +26,16 @@ jobs:
       - run: python -m pip install -e ".[dev]"
       - name: Collect changed scan targets
         run: |
-          git fetch origin "${{ github.base_ref }}" --depth=1
-          git diff --name-only --diff-filter=ACMR "origin/${{ github.base_ref }}...HEAD" -- \
-            '*.cfg' '*.ini' '*.json' '*.md' '*.py' '*.sh' '*.toml' '*.yaml' '*.yml' \
-            > ai-sast-targets.txt
+          if [ -n "${GITHUB_BASE_REF:-}" ]; then
+            git fetch origin "$GITHUB_BASE_REF" --depth=1
+            git diff --name-only --diff-filter=ACMR "origin/$GITHUB_BASE_REF...HEAD" -- \
+              '*.cfg' '*.ini' '*.json' '*.md' '*.py' '*.sh' '*.toml' '*.yaml' '*.yml' \
+              > ai-sast-targets.txt
+          else
+            git diff --name-only --diff-filter=ACMR HEAD^ HEAD -- \
+              '*.cfg' '*.ini' '*.json' '*.md' '*.py' '*.sh' '*.toml' '*.yaml' '*.yml' \
+              > ai-sast-targets.txt
+          fi
           cat ai-sast-targets.txt
       - name: Run AI-SAST deterministic gate
         run: |

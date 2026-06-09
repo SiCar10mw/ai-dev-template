@@ -466,6 +466,7 @@ def _mandatory_gates() -> str:
             "python scripts/check_template_conformance.py",
             "python scripts/check_principle_tripwires.py",
             "python scripts/check_profile_boundary.py",
+            "python scripts/check_owasp_llm.py",
             "python scripts/check_docs_impact.py",
             "python scripts/check_docs_site.py",
             "python scripts/check_generated_artifacts.py",

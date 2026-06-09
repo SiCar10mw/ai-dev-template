@@ -1,0 +1,37 @@
+name: sbom
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "45 8 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  sbom:
+    name: SBOM build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e ".[dev]"
+      - run: python scripts/gen_aibom.py
+      - uses: anchore/sbom-action@v0
+        with:
+          path: .
+          format: spdx-json
+          output-file: sbom.spdx.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: |
+            generated/aibom/aibom.json
+            sbom.spdx.json
+          if-no-files-found: error

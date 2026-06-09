@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template AI-SAST Scheduled",
+  "description": "Run a scheduled non-blocking full AI-SAST scan.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Artificial intelligence"]
+}

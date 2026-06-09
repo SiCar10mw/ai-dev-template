@@ -1,6 +1,7 @@
 name: ai-sast-scheduled
 
 on:
+  workflow_call:
   schedule:
     - cron: "0 9 * * 1"
   workflow_dispatch:

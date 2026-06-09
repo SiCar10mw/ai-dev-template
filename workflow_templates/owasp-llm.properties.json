@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template OWASP LLM",
+  "description": "Verify OWASP LLM Top 10 coverage is mapped to enforced gates.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Artificial intelligence"]
+}

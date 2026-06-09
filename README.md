@@ -21,6 +21,8 @@ The template bakes in:
 - Copilot-native repository instructions, ADRs, threat model, security policy, and issue templates.
 - Gitleaks and mypy gates in pre-commit and CI.
 - Generated evidence artifacts with a drift tripwire.
+- OWASP LLM Top 10 coverage mapped to enforced local and CI gates.
+- One-command GitHub operationalization with dry-run and human confirmation before repo writes.
 - M365 governance integration patterns for Entra, Purview, SharePoint, and Teams.
 - Parallel-agent mechanics with atomic claims, worktree isolation, concurrency cap, and merge queue.
 - Security-from-the-left with spec-time threat modeling and abuse cases.
@@ -55,6 +57,9 @@ project venv, installs dependencies there, and runs the first `make check`.
 8. Replace `@owner` in `CODEOWNERS`.
 9. Update `docs/threat-model.md` and create ADRs for project-specific architecture choices.
 10. Update `GOVERNANCE.md`, `config/approved-models.example.json`, and `config/m365-publisher.example.json`.
+11. Review `docs/owasp-llm-top10.md`.
+12. When ready for GitHub enforcement, run `bash scripts/operationalize.sh --dry-run --repo OWNER/REPO`, then
+    `make operationalize`.
 
 ## Default Stack
 
@@ -118,6 +123,8 @@ kept current, audience-scoped, reviewed, and built from repository source.
 | `.github/copilot-instructions.md` | Generated fourth-view Copilot repository instructions |
 | `docs/adr/` | Architecture decision records |
 | `docs/threat-model.md` | Baseline threat model |
+| `docs/owasp-llm-top10.md` | OWASP LLM risk-to-gate mapping |
+| `docs/operationalize.md` | Repo-scoped GitHub operationalization runbook |
 | `SECURITY.md` | Security reporting and baseline policy |
 | `SECRETS.md` | No-secret policy, credential shape, rotation, and runtime handling |
 | `docs/parallel-agents.md` | Safe parallel sub-agent mechanics |

@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template SBOM",
+  "description": "Generate SBOM and AIBOM inventory evidence.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Automation"]
+}

@@ -56,6 +56,8 @@ As a user of this project, I can complete the primary workflow so that the inten
 ### Required Mitigations
 
 - Sanitization or validation at trust boundaries.
+- OWASP LLM gate mapping reviewed when the workflow touches LLM inputs, outputs, tools, model routing, or generated
+  evidence.
 - Deterministic tests or golden fixtures for truth claims.
 - Human approval for external writes and high-impact actions.
 - Secret scanning and no-secret runtime handling.

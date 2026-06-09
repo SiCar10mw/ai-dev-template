@@ -38,6 +38,8 @@ Example: Python projects use `ruff` and `pytest`; a TypeScript project might use
 | One roster, generated for the top three first-class tools: Anthropic Claude, Google Gemini, and OpenAI Codex/GPT. | `agents/*.md`, `scripts/gen_agent_views.py`, `scripts/check_agent_roster.py`, `AGENTS.md`, `CLAUDE.md`, `GEMINI.md` |
 | Agents are approved-models-only, audit-logged, no-exfil, and sensitivity-aware. | `config/approved-models.example.json`, `agents/*.md`, `docs/agent-fireteam.md` |
 | Playbook -> weapon -> gate maturity: every capability climbs documented -> automated -> enforced. | `docs/agent-fireteam.md`, scripts, CI |
+| OWASP LLM risk coverage maps every OWASP-LLM item to an enforced gate, not prose-only assurance. | `docs/owasp-llm-top10.md`, `scripts/check_owasp_llm.py`, `.github/workflows/owasp-llm.yml` |
+| GitHub operationalization is repo-scoped, dry-runable, idempotent, and human-gated before outward writes. | `scripts/operationalize.sh`, `docs/operationalize.md`, `tests/unit/test_operationalize.py` |
 | Independent/adversarial review: a second AI attempts to refute the first AI's output; humans adjudicate disagreements. | `agents/independent-reviewer.md`, `docs/independent-review.md`, `review-prompt.md` |
 | Spec-first delivery: every meaningful feature flows through specify -> plan -> tasks -> implement. | `specs/TEMPLATE/`, `specs/README.md` |
 | Honest documentation: current and target state are labeled separately and docs must match code. | `docs/docs-boundary.md`, `docs-site/`, docs build convention |

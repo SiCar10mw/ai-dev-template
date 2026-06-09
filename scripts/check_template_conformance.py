@@ -76,6 +76,8 @@ REQUIRED_FILES = [
     "docs/document-generation.md",
     "docs/model-routing.md",
     "docs/ai-governance-mapping.md",
+    "docs/owasp-llm-top10.md",
+    "docs/operationalize.md",
     "docs/m365-integration.md",
     "docs/threat-model.md",
     "docs/release.md",
@@ -100,6 +102,14 @@ REQUIRED_FILES = [
     ".pre-commit-config.yaml",
     ".gitleaks.toml",
     ".github/workflows/ci.yml",
+    ".github/workflows/codeql.yml",
+    ".github/workflows/sbom.yml",
+    ".github/workflows/dependency-review.yml",
+    ".github/workflows/secret-scan.yml",
+    ".github/workflows/owasp-llm.yml",
+    ".github/workflows/ai-sast-pr.yml",
+    ".github/workflows/ai-sast-scheduled.yml",
+    ".github/workflows/conformance-audit.yml",
     ".github/workflows/docs-site.yml",
     ".github/pull_request_template.md",
     "Makefile",
@@ -110,7 +120,9 @@ REQUIRED_FILES = [
     "scripts/check_principle_tripwires.py",
     "scripts/check_profile_boundary.py",
     "scripts/check_no_secrets.py",
+    "scripts/check_owasp_llm.py",
     "scripts/check_agent_roster.py",
+    "scripts/operationalize.sh",
     "scripts/claim_backlog_item.py",
     "scripts/dispatch_agents.py",
     "scripts/merge_queue.py",
@@ -137,7 +149,39 @@ REQUIRED_FILES = [
     "docs-site/docusaurus.config.js",
     "docs-site/sidebars.js",
     "docs-site/docs/index.md",
+    "workflow_templates/README.md",
+    "workflow_templates/ci.yml",
+    "workflow_templates/ci.properties.json",
+    "workflow_templates/codeql.yml",
+    "workflow_templates/codeql.properties.json",
+    "workflow_templates/sbom.yml",
+    "workflow_templates/sbom.properties.json",
+    "workflow_templates/dependency-review.yml",
+    "workflow_templates/dependency-review.properties.json",
+    "workflow_templates/secret-scan.yml",
+    "workflow_templates/secret-scan.properties.json",
+    "workflow_templates/owasp-llm.yml",
+    "workflow_templates/owasp-llm.properties.json",
+    "workflow_templates/ai-sast-pr.yml",
+    "workflow_templates/ai-sast-pr.properties.json",
+    "workflow_templates/ai-sast-scheduled.yml",
+    "workflow_templates/ai-sast-scheduled.properties.json",
+    "workflow_templates/conformance-audit.yml",
+    "workflow_templates/conformance-audit.properties.json",
+    "workflow_templates/ai-dev-template.svg",
 ]
+
+GITHUB_NATIVE_WORKFLOWS = (
+    "ci",
+    "codeql",
+    "sbom",
+    "dependency-review",
+    "secret-scan",
+    "owasp-llm",
+    "ai-sast-pr",
+    "ai-sast-scheduled",
+    "conformance-audit",
+)
 
 MANDATORY_PHRASES = [
     "least privilege",
@@ -163,6 +207,8 @@ MANDATORY_PHRASES = [
     "parallel agents",
     "security starts at spec time",
     "secrets never enter",
+    "owasp llm",
+    "github operationalization",
 ]
 
 
@@ -208,6 +254,7 @@ def check_make_ci_parity() -> list[str]:
         "python scripts/check_docs_impact.py",
         "python scripts/check_principle_tripwires.py",
         "python scripts/check_profile_boundary.py",
+        "python scripts/check_owasp_llm.py",
         "python scripts/check_docs_site.py",
         "python scripts/check_generated_artifacts.py",
         "python scripts/check_no_secrets.py",
@@ -376,6 +423,47 @@ def check_spec_security_left() -> list[str]:
     return errors
 
 
+def check_github_native_operationalization() -> list[str]:
+    docs = _read("docs/operationalize.md")
+    makefile = _read("Makefile")
+    script = _read("scripts/operationalize.sh")
+    errors = []
+
+    for name in GITHUB_NATIVE_WORKFLOWS:
+        workflow_path = f".github/workflows/{name}.yml"
+        template_path = f"workflow_templates/{name}.yml"
+        properties_path = f"workflow_templates/{name}.properties.json"
+        workflow = _read(workflow_path)
+        if "workflow_call" not in workflow:
+            errors.append(f"{workflow_path} must be reusable through workflow_call")
+        if not (ROOT / template_path).exists():
+            errors.append(f"missing organization workflow template: {template_path}")
+        if not (ROOT / properties_path).exists():
+            errors.append(f"missing organization workflow template metadata: {properties_path}")
+        if f"`{name}.yml`" not in docs:
+            errors.append(f"docs/operationalize.md must reference workflow: {name}.yml")
+
+    if "operationalize:" not in makefile or "scripts/operationalize.sh" not in makefile:
+        errors.append("Makefile must expose make operationalize")
+
+    required_script_markers = (
+        "--dry-run",
+        "read -r -p",
+        'gh secret set "$secret" --repo "$REPO"',
+        '"/repos/$REPO/',
+        "Dry-run complete. No gh commands were invoked.",
+    )
+    for marker in required_script_markers:
+        if marker not in script:
+            errors.append(f"scripts/operationalize.sh missing repo-scoped marker: {marker}")
+
+    forbidden_script_markers = ("--org", "/orgs/", "gh config set")
+    for marker in forbidden_script_markers:
+        if marker in script:
+            errors.append(f"scripts/operationalize.sh must not touch global/org state: {marker}")
+    return errors
+
+
 def main() -> int:
     errors = []
     for check in (
@@ -393,6 +481,7 @@ def main() -> int:
         check_generated_artifact_gate,
         check_gitleaks_and_mypy,
         check_spec_security_left,
+        check_github_native_operationalization,
     ):
         errors.extend(check())
 

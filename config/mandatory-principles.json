@@ -337,6 +337,20 @@
       "profile": "core",
       "tripwires": ["scripts/check_agent_roster.py", "scripts/gen_agent_views.py", "agents/orchestrator.md"],
       "negative_probe": "hand-edit a generated tool view or remove a first-class generated view"
+    },
+    {
+      "id": "P49",
+      "statement": "OWASP LLM risk coverage maps every OWASP-LLM item to an enforced gate, not prose-only assurance.",
+      "profile": "core",
+      "tripwires": ["scripts/check_owasp_llm.py", "docs/owasp-llm-top10.md", ".github/workflows/owasp-llm.yml"],
+      "negative_probe": "remove an OWASP LLM mapped gate or the OWASP CI workflow"
+    },
+    {
+      "id": "P50",
+      "statement": "GitHub operationalization is repo-scoped, dry-runable, idempotent, and human-gated before outward writes.",
+      "profile": "core",
+      "tripwires": ["scripts/operationalize.sh", "docs/operationalize.md", "tests/unit/test_operationalize.py"],
+      "negative_probe": "remove dry-run behavior, repo scoping, or confirmation prompt from operationalize.sh"
     }
   ]
 }

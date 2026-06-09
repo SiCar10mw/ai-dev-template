@@ -1,0 +1,6 @@
+{
+  "name": "AI Dev Template Dependency Review",
+  "description": "Review dependency changes on pull requests.",
+  "iconName": "ai-dev-template",
+  "categories": ["Security", "Automation"]
+}
