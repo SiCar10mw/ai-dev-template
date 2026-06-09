@@ -1,14 +1,3 @@
----
-name: observability-fleet-health
-description: Tracks pass rate, queue depth, claim contention, gate hotspots, token/compute budget, and fleet health.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/observability-fleet-health.md`
-
 # Observability And Fleet Health
 
 ## Role

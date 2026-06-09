@@ -1,14 +1,3 @@
----
-name: privacy-data-classifier
-description: Flags sensitive data, assigns sensitivity labels, and validates data handling across code, docs, generated artifacts, and M365 publication.
-tools: Read, Grep, Glob
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/privacy-data-classifier.md`
-
 # Privacy Data Classifier
 
 ## Role

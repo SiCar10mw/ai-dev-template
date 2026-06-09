@@ -12,6 +12,7 @@ The template bakes in:
 - Independent/adversarial AI review.
 - Machine-user pull request flow.
 - Progressive discovery for agent skills.
+- One model-neutral agent roster generated for Anthropic Claude, Google Gemini, and OpenAI Codex/GPT.
 - Local equals CI quality gates.
 - Governed MCP tool access for external tools such as Lucid Chart.
 - Mandatory documentation-impact checks for code changes.
@@ -28,18 +29,19 @@ The template bakes in:
 ## Start a New Project
 
 ```bash
-cp -R ai-dev-template my-new-project
-cd my-new-project
 ./bootstrap.sh
 ```
 
 The bootstrap script prompts for:
 
 - project name
+- target parent directory, defaulting to `~/projects`
 - machine-user git name
 - machine-user git email
 
-It then initializes git if needed and runs the first `make check`.
+It creates `<parent>/<project-slug>`, refuses to overwrite an existing target directory, copies this template without
+template git history or generated caches, initializes a fresh local `main` branch with no `origin` remote, creates a
+project venv, installs dependencies there, and runs the first `make check`.
 
 ## First Human Actions
 
@@ -99,8 +101,10 @@ kept current, audience-scoped, reviewed, and built from repository source.
 |---|---|
 | `STANDARDS.md` | Mandatory principles vs recommended tools |
 | `CONSTITUTION.md` | Non-negotiable project governance |
-| `AGENTS.md` | Agent roster and operating rules |
-| `CLAUDE.md` | Claude/session-specific operating guide |
+| `agents/` | Model-neutral source of truth for agent personas |
+| `AGENTS.md` | Generated OpenAI Codex/GPT roster and operating rules |
+| `CLAUDE.md` | Generated Anthropic Claude operating guide |
+| `GEMINI.md` | Generated Google Gemini operating guide |
 | `BACKLOG.md` | Symphony backlog board |
 | `specs/` | Spec-first delivery artifacts |
 | `tests/` | Unit, integration, smoke, and golden tests |
@@ -111,7 +115,7 @@ kept current, audience-scoped, reviewed, and built from repository source.
 | `.vscode/mcp.json` | VS Code MCP config |
 | `config/model-routing.example.json` | Secret-free model role and provider guidance |
 | `GOVERNANCE.md` | Two-domain AI-building and AI-usage governance model |
-| `.github/copilot-instructions.md` | Repository-wide Copilot instructions |
+| `.github/copilot-instructions.md` | Generated fourth-view Copilot repository instructions |
 | `docs/adr/` | Architecture decision records |
 | `docs/threat-model.md` | Baseline threat model |
 | `SECURITY.md` | Security reporting and baseline policy |

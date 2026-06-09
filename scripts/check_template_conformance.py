@@ -5,6 +5,7 @@ from __future__ import annotations
 import ast
 import json
 import re
+import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -23,6 +24,18 @@ REQUIRED_FILES = [
     "CODEOWNERS",
     ".env.example",
     "BACKLOG.md",
+    "agents/backlog-worker.md",
+    "agents/independent-reviewer.md",
+    "agents/orchestrator.md",
+    "agents/security-reviewer.md",
+    "agents/governance-control-mapper.md",
+    "agents/privacy-data-classifier.md",
+    "agents/spec-author.md",
+    "agents/docs-drift-guardian.md",
+    "agents/threat-modeler.md",
+    "agents/test-author.md",
+    "agents/release-supply-chain-steward.md",
+    "agents/observability-fleet-health.md",
     ".claude/agents/backlog-worker.md",
     ".claude/agents/independent-reviewer.md",
     ".claude/agents/orchestrator.md",
@@ -90,15 +103,18 @@ REQUIRED_FILES = [
     ".github/workflows/docs-site.yml",
     ".github/pull_request_template.md",
     "Makefile",
+    "scripts/__init__.py",
     "scripts/check_docs_impact.py",
     "scripts/check_docs_site.py",
     "scripts/check_generated_artifacts.py",
     "scripts/check_principle_tripwires.py",
     "scripts/check_profile_boundary.py",
     "scripts/check_no_secrets.py",
+    "scripts/check_agent_roster.py",
     "scripts/claim_backlog_item.py",
     "scripts/dispatch_agents.py",
     "scripts/merge_queue.py",
+    "scripts/gen_agent_views.py",
     "scripts/gen_all_artifacts.py",
     "scripts/gen_aibom.py",
     "scripts/gen_governance_evidence.py",
@@ -139,6 +155,8 @@ MANDATORY_PHRASES = [
     "gitleaks",
     "mypy",
     "generated artifacts",
+    "one roster",
+    "top three",
     "two-domain governance",
     "three-tier docs boundary",
     "personal-scale default",
@@ -195,6 +213,7 @@ def check_make_ci_parity() -> list[str]:
         "python scripts/check_no_secrets.py",
         "pre-commit run gitleaks --all-files --config .pre-commit-config.yaml",
         "mypy ai_dev_template scripts skills",
+        "pip-audit --requirement requirements.txt --disable-pip --no-deps",
     ):
         if command not in ci_script:
             return [f"scripts/ci_check.sh missing required command: {command}"]
@@ -244,6 +263,47 @@ def check_mcp_configs() -> list[str]:
     return errors
 
 
+def check_model_profiles() -> list[str]:
+    approved = json.loads(_read("config/approved-models.example.json"))
+    routing = json.loads(_read("config/model-routing.example.json"))
+    errors = []
+    required_profiles = {
+        "anthropic_claude": "claude",
+        "google_gemini": "gemini",
+        "openai_codex_gpt": "gpt-codex",
+    }
+
+    approved_profiles = approved.get("default_profiles", {})
+    routing_tools = routing.get("first_class_tools", [])
+    if not isinstance(approved_profiles, dict):
+        errors.append("config/approved-models.example.json default_profiles must be an object")
+        approved_profiles = {}
+    if not isinstance(routing_tools, list):
+        errors.append("config/model-routing.example.json first_class_tools must be a list")
+        routing_tools = []
+
+    routed_profiles = {
+        str(tool.get("profile"))
+        for tool in routing_tools
+        if isinstance(tool, dict) and "profile" in tool
+    }
+    for profile, family in required_profiles.items():
+        approved_profile = approved_profiles.get(profile, {})
+        if not isinstance(approved_profile, dict):
+            errors.append(f"config/approved-models.example.json missing default profile: {profile}")
+            continue
+        if approved_profile.get("model_family") != family:
+            errors.append(f"config/approved-models.example.json {profile} must use model_family {family}")
+        if not str(approved_profile.get("model_id", "")).strip():
+            errors.append(f"config/approved-models.example.json {profile} must define a non-secret model_id")
+        if profile not in routed_profiles:
+            errors.append(f"config/model-routing.example.json missing first-class profile: {profile}")
+    fourth_view = routing.get("fourth_view", {})
+    if not isinstance(fourth_view, dict) or fourth_view.get("profile") != "github_copilot":
+        errors.append("config/model-routing.example.json must keep GitHub Copilot as the fourth view")
+    return errors
+
+
 def check_docs_site_config() -> list[str]:
     package = json.loads(_read("docs-site/package.json"))
     scripts = package.get("scripts", {})
@@ -257,30 +317,21 @@ def check_docs_site_config() -> list[str]:
 
 
 def check_agent_roster() -> list[str]:
-    agents = _read("AGENTS.md")
-    errors = []
-    for agent in (
-        "orchestrator",
-        "backlog-worker",
-        "security-reviewer",
-        "independent-reviewer",
-        "governance-control-mapper",
-        "privacy-data-classifier",
-        "spec-author",
-        "docs-drift-guardian",
-        "threat-modeler",
-        "test-author",
-        "release-supply-chain-steward",
-        "observability-fleet-health",
-    ):
-        if agent not in agents:
-            errors.append(f"AGENTS.md missing required fireteam agent: {agent}")
-    for path in (ROOT / ".claude" / "agents").glob("*.md"):
-        text = path.read_text(encoding="utf-8")
-        for phrase in ("approved-models-only", "audit-logging", "no-exfil", "sensitivity-aware"):
-            if phrase not in text:
-                errors.append(f"{path.relative_to(ROOT)} missing agent binding: {phrase}")
-    return errors
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "check_agent_roster.py")],
+        cwd=ROOT,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode == 0:
+        return []
+    messages = [
+        line.removeprefix("FAIL: ")
+        for line in [*result.stderr.splitlines(), *result.stdout.splitlines()]
+        if line.strip()
+    ]
+    return messages or ["agent roster source/generated-view drift check failed"]
 
 
 def check_generated_artifact_gate() -> list[str]:
@@ -336,6 +387,7 @@ def main() -> int:
         check_type_hints,
         check_backlog_human_only,
         check_mcp_configs,
+        check_model_profiles,
         check_docs_site_config,
         check_agent_roster,
         check_generated_artifact_gate,

@@ -1,14 +1,3 @@
----
-name: spec-author
-description: Creates and maintains Spec-Kit style specify -> plan -> tasks artifacts before implementation work starts.
-tools: Read, Edit, Write, Grep, Glob
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/spec-author.md`
-
 # Spec Author
 
 ## Role

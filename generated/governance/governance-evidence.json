@@ -23,11 +23,11 @@
   "source_hashes": {
     ".github/workflows/ci.yml": "d7e76a72b39c1d28eae6824c678941db01f2c583661e861159d9f37f3d4e4462",
     ".pre-commit-config.yaml": "aed4fb802e0fec8a6c3740a42ce004a29b4a173d3c36773d00650e640258f5a5",
-    "AGENTS.md": "b936432afe21fb0aa2d992121147a1bc960d4f90f16361ab20ad0e5472654e9d",
+    "AGENTS.md": "21427bb2f9ffc171a774cea06ebdf7041012007ffe7d5c5d2848d6beb746a8f6",
     "CONSTITUTION.md": "f62397b2acad468fc314d0b76d539d5abcd75b1bcf854ce346ceb3d7380eca10",
     "GOVERNANCE.md": "5ec5b9f0696a5633f3c7f74837afabe5f5100cb30105b2601c717a1459c43438",
     "SECURITY.md": "48fcb65b6192ad3140e85b73268f183535e365744c8bbe30917d38452aeda016",
-    "STANDARDS.md": "b8f5955f8bbd1e11fb01d915aa6a04c4b79f4c807b8c5473110db5818961f344",
+    "STANDARDS.md": "fe9bc33c2ab6d8344648c4d9047c22931465105592aea1ea365b8abbfa162136",
     "pyproject.toml": "c1a1471ea0a5cd5ac7b0a09cc70605458ddcd1d41f2af5da99324fbdda43f63d"
   }
 }

@@ -1,6 +1,39 @@
 {
-  "default_client": "github-copilot-cli",
+  "default_client": "first-class-tool-router",
   "source_of_truth": "This file documents preferred model roles. The active client or enterprise policy decides availability.",
+  "first_class_tools": [
+    {
+      "rank": 1,
+      "profile": "anthropic_claude",
+      "tool": "Anthropic Claude",
+      "provider": "anthropic",
+      "model_family": "claude",
+      "model_id": "claude-enterprise-default"
+    },
+    {
+      "rank": 2,
+      "profile": "google_gemini",
+      "tool": "Google Gemini",
+      "provider": "google",
+      "model_family": "gemini",
+      "model_id": "gemini-enterprise-default"
+    },
+    {
+      "rank": 3,
+      "profile": "openai_codex_gpt",
+      "tool": "OpenAI Codex/GPT",
+      "provider": "openai",
+      "model_family": "gpt-codex",
+      "model_id": "gpt-codex-enterprise-default"
+    }
+  ],
+  "fourth_view": {
+    "profile": "github_copilot",
+    "tool": "GitHub Copilot",
+    "provider": "github",
+    "model_family": "enterprise-routed",
+    "model_id": "copilot-enterprise-default"
+  },
   "rules": [
     "Do not commit provider API keys, bearer tokens, OAuth refresh tokens, or private endpoint URLs.",
     "Use repository configuration for model roles; do not rely on model memory for provider selection.",
@@ -8,30 +41,30 @@
   ],
   "model_roles": {
     "primary_coding": {
-      "preferred_order": ["gpt", "anthropic", "gemini"],
+      "preferred_order": ["anthropic_claude", "google_gemini", "openai_codex_gpt"],
       "purpose": "Implementation, refactoring, test generation, and local reasoning."
     },
     "independent_review": {
-      "preferred_order": ["anthropic", "gpt", "gemini"],
+      "preferred_order": ["google_gemini", "anthropic_claude", "openai_codex_gpt"],
       "purpose": "Adversarial review with a different model family from the primary coding pass when available."
     },
     "documentation": {
-      "preferred_order": ["gpt", "anthropic", "gemini"],
+      "preferred_order": ["openai_codex_gpt", "anthropic_claude", "google_gemini"],
       "purpose": "Contributor docs, public docs-site copy, DOCX drafts, and deck drafts."
     }
   },
   "provider_headers": {
-    "openai_or_azure_openai": {
+    "openai_codex_gpt": {
       "api_key": "Set OPENAI_API_KEY or Azure OpenAI credentials in the environment or secret manager.",
       "notes": "Never store authorization headers in this file."
     },
-    "anthropic": {
+    "anthropic_claude": {
       "api_key": "Set ANTHROPIC_API_KEY in the environment or secret manager.",
       "version_header": "Set the provider-required version header in the client configuration, not in committed secrets."
     },
-    "gemini": {
+    "google_gemini": {
       "api_key": "Set GEMINI_API_KEY or the enterprise-approved equivalent in the environment or secret manager.",
-      "notes": "Use the Copilot CLI model picker or enterprise policy where available."
+      "notes": "Use the enterprise-approved Gemini client or routing policy where available."
     }
   }
 }

@@ -1,14 +1,3 @@
----
-name: docs-drift-guardian
-description: Catches documentation drift across contributor docs, public docs-site/wiki, corporate-governed docs, and generated artifacts.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/docs-drift-guardian.md`
-
 # Docs Drift Guardian
 
 ## Role

@@ -1,14 +1,3 @@
----
-name: independent-reviewer
-description: Attempts to refute the primary agent's output for correctness, security, test adequacy, and documentation drift.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/independent-reviewer.md`
-
 # Independent Reviewer
 
 ## Role

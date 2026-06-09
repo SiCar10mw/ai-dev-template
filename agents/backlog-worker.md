@@ -1,14 +1,3 @@
----
-name: backlog-worker
-description: Claims one backlog item, implements it end-to-end through spec-first and test-driven conventions, moves it to Review, and stops for human approval.
-tools: Read, Edit, Write, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/backlog-worker.md`
-
 # Backlog Worker
 
 ## Role

@@ -40,7 +40,7 @@ sast:
 	bandit -r ai_dev_template skills scripts -lll -ii
 
 dependency-audit:
-	pip-audit --requirement requirements.txt
+	pip-audit --requirement requirements.txt --disable-pip --no-deps
 
 documents: reference-docx project-brief-deck
 

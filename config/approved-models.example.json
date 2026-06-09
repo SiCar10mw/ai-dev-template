@@ -1,15 +1,69 @@
 {
   "policy": "Only use model families and clients approved by the project owner or enterprise AI governance process.",
+  "first_class_tools": [
+    {
+      "rank": 1,
+      "tool": "Anthropic Claude",
+      "provider": "anthropic",
+      "model_family": "claude",
+      "default_profile": "anthropic_claude"
+    },
+    {
+      "rank": 2,
+      "tool": "Google Gemini",
+      "provider": "google",
+      "model_family": "gemini",
+      "default_profile": "google_gemini"
+    },
+    {
+      "rank": 3,
+      "tool": "OpenAI Codex/GPT",
+      "provider": "openai",
+      "model_family": "gpt-codex",
+      "default_profile": "openai_codex_gpt"
+    }
+  ],
+  "fourth_view": {
+    "tool": "GitHub Copilot",
+    "default_profile": "github_copilot"
+  },
   "approved_clients": [
+    "anthropic-claude",
+    "google-gemini",
+    "openai-codex-gpt",
     "github-copilot-cli",
     "vscode-github-copilot",
     "enterprise-approved-direct-client"
   ],
   "approved_model_families": [
+    "claude",
+    "gemini",
     "gpt",
-    "anthropic",
-    "gemini"
+    "codex",
+    "gpt-codex"
   ],
+  "default_profiles": {
+    "anthropic_claude": {
+      "provider": "anthropic",
+      "model_family": "claude",
+      "model_id": "claude-enterprise-default"
+    },
+    "google_gemini": {
+      "provider": "google",
+      "model_family": "gemini",
+      "model_id": "gemini-enterprise-default"
+    },
+    "openai_codex_gpt": {
+      "provider": "openai",
+      "model_family": "gpt-codex",
+      "model_id": "gpt-codex-enterprise-default"
+    },
+    "github_copilot": {
+      "provider": "github",
+      "model_family": "enterprise-routed",
+      "model_id": "copilot-enterprise-default"
+    }
+  },
   "rules": [
     "Do not send restricted data to models unless the enterprise policy explicitly allows it.",
     "Use a different approved model family for independent review when available.",

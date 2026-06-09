@@ -1,14 +1,3 @@
----
-name: security-reviewer
-description: Performs senior AppSec review of code, workflows, MCP access, generated artifacts, and release gates.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/security-reviewer.md`
-
 # Security Reviewer
 
 ## Role

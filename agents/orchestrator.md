@@ -1,14 +1,3 @@
----
-name: orchestrator
-description: Routes work through the core fireteam, keeps the Symphony loop bounded, and stops at human gates.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/orchestrator.md`
-
 # Orchestrator
 
 ## Role

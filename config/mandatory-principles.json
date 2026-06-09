@@ -62,7 +62,7 @@
       "id": "P09",
       "statement": "Model/provider routing is explicit, secret-free, and subordinate to deterministic gates.",
       "profile": "core",
-      "tripwires": ["config/model-routing.example.json", "config/approved-models.example.json", "check_no_secrets.py"],
+      "tripwires": ["config/model-routing.example.json", "config/approved-models.example.json", "check_model_profiles", "check_no_secrets.py"],
       "negative_probe": "add secret-like model credential or remove approved model config"
     },
     {
@@ -160,7 +160,7 @@
       "id": "P23",
       "statement": "Machine-user pull request flow: bot may author PRs; human approves; bot cannot self-approve or self-merge.",
       "profile": "core",
-      "tripwires": ["docs/machine-user-pr-flow.md", ".github/pull_request_template.md", ".claude/agents/backlog-worker.md"],
+      "tripwires": ["docs/machine-user-pr-flow.md", ".github/pull_request_template.md", "agents/backlog-worker.md"],
       "negative_probe": "remove no-self-merge rule"
     },
     {
@@ -174,21 +174,21 @@
       "id": "P25",
       "statement": "Symphony backlog loop: human curates; worker claims one item, moves it through the board, and stops for approval.",
       "profile": "core",
-      "tripwires": ["check_backlog_human_only", ".claude/agents/backlog-worker.md"],
+      "tripwires": ["check_backlog_human_only", "agents/backlog-worker.md"],
       "negative_probe": "remove Human-only section or stop-for-approval rule"
     },
     {
       "id": "P26",
       "statement": "Core agent fireteam ships with every project.",
       "profile": "core",
-      "tripwires": ["check_agent_roster", "docs/agent-fireteam.md"],
+      "tripwires": ["check_agent_roster", "agents/orchestrator.md", "docs/agent-fireteam.md"],
       "negative_probe": "remove required persona file"
     },
     {
       "id": "P27",
       "statement": "Agents are approved-models-only, audit-logged, no-exfil, and sensitivity-aware.",
       "profile": "core",
-      "tripwires": ["check_agent_roster", "config/approved-models.example.json"],
+      "tripwires": ["check_agent_roster", "agents/orchestrator.md", "config/approved-models.example.json"],
       "negative_probe": "remove agent binding phrase"
     },
     {
@@ -202,7 +202,7 @@
       "id": "P29",
       "statement": "Independent/adversarial review: a second AI attempts to refute the first AI's output; humans adjudicate disagreements.",
       "profile": "core",
-      "tripwires": ["docs/independent-review.md", "review-prompt.md", ".claude/agents/independent-reviewer.md"],
+      "tripwires": ["docs/independent-review.md", "review-prompt.md", "agents/independent-reviewer.md"],
       "negative_probe": "remove refute/adjudicate language"
     },
     {
@@ -293,7 +293,7 @@
       "id": "P42",
       "statement": "Look-before-you-delete.",
       "profile": "core",
-      "tripwires": ["docs/safety-habits.md", "CLAUDE.md", ".claude/agents/backlog-worker.md"],
+      "tripwires": ["docs/safety-habits.md", "CLAUDE.md", "agents/backlog-worker.md"],
       "negative_probe": "remove look-before-delete operating rule"
     },
     {
@@ -321,7 +321,7 @@
       "id": "P46",
       "statement": "Security starts at spec time with assume breach, abuse cases, and threat modeling.",
       "profile": "core",
-      "tripwires": ["specs/TEMPLATE/spec.md", ".claude/agents/threat-modeler.md", "CONSTITUTION.md"],
+      "tripwires": ["specs/TEMPLATE/spec.md", "agents/threat-modeler.md", "CONSTITUTION.md"],
       "negative_probe": "remove threat model and abuse cases from spec template"
     },
     {
@@ -330,6 +330,13 @@
       "profile": "core",
       "tripwires": ["SECRETS.md", ".env.example", ".github/workflows/ci.yml", ".pre-commit-config.yaml"],
       "negative_probe": "add a real secret or remove full-history secret scan job"
+    },
+    {
+      "id": "P48",
+      "statement": "One roster, generated for the top three first-class tools: Anthropic Claude, Google Gemini, and OpenAI Codex/GPT.",
+      "profile": "core",
+      "tripwires": ["scripts/check_agent_roster.py", "scripts/gen_agent_views.py", "agents/orchestrator.md"],
+      "negative_probe": "hand-edit a generated tool view or remove a first-class generated view"
     }
   ]
 }

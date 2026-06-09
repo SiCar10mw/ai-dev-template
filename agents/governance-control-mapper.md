@@ -1,14 +1,3 @@
----
-name: governance-control-mapper
-description: Maps project work to NIST AI RMF, ISO/IEC 42001, EU AI Act tiering, and the repo/Purview/Entra enforcement boundary.
-tools: Read, Grep, Glob
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/governance-control-mapper.md`
-
 # Governance Control Mapper
 
 ## Role

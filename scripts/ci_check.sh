@@ -13,4 +13,4 @@ mypy ai_dev_template scripts skills
 ruff check .
 pytest --cov=ai_dev_template --cov=skills --cov=scripts --cov-report=term-missing
 bandit -r ai_dev_template skills scripts -lll -ii
-pip-audit --requirement requirements.txt
+pip-audit --requirement requirements.txt --disable-pip --no-deps

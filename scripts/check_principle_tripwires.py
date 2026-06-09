@@ -51,9 +51,11 @@ def enforcement_corpus(root: Path = ROOT) -> str:
         "Makefile",
         "scripts/ci_check.sh",
         "scripts/check_template_conformance.py",
+        "scripts/check_agent_roster.py",
         "scripts/check_generated_artifacts.py",
         "scripts/check_docs_impact.py",
         "scripts/check_profile_boundary.py",
+        "scripts/gen_agent_views.py",
         "tests/unit/test_generated_artifacts.py",
         "tests/unit/test_docs_impact.py",
         "tests/unit/test_verdict_golden.py",
@@ -70,6 +72,7 @@ def enforcement_corpus(root: Path = ROOT) -> str:
         if path.exists():
             text.append(path.read_text(encoding="utf-8"))
     text.extend(path.name for path in (root / "tests").rglob("*.py"))
+    text.extend(str(path.relative_to(root)) for path in (root / "agents").glob("*.md"))
     text.extend(str(path.relative_to(root)) for path in (root / ".claude" / "agents").glob("*.md"))
     return "\n".join(text).lower()
 
@@ -119,7 +122,7 @@ def tripwire_is_resolvable(tripwire: str, corpus: str, root: Path = ROOT) -> boo
         return True
     if candidate.endswith((".py", ".md", ".json", ".toml", ".yaml", ".yml")) and (root / candidate).exists():
         return True
-    if candidate.startswith(("tests/", "generated/", "config/", "docs/", ".github/", ".claude/")):
+    if candidate.startswith(("tests/", "generated/", "config/", "docs/", "agents/", ".github/", ".claude/")):
         return (root / candidate).exists()
     normalized = re.sub(r"[^a-z0-9_. -]+", " ", tripwire.lower()).strip()
     tokens = [token for token in normalized.split() if len(token) >= 4]

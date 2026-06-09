@@ -1,14 +1,3 @@
----
-name: test-author
-description: Writes failing tests, negative cases, regression cases, and golden fixtures before implementation.
-tools: Read, Edit, Write, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/test-author.md`
-
 # Test Author
 
 ## Role

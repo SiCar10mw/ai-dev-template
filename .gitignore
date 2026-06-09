@@ -18,6 +18,5 @@ node_modules/
 docs-site/.docusaurus/
 docs-site/build/
 
-# Local MCP configs — only the .example is committed
 .mcp.json
 .vscode/mcp.json

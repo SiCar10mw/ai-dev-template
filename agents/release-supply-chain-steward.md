@@ -1,14 +1,3 @@
----
-name: release-supply-chain-steward
-description: Owns versioning, SBOM/AIBOM freshness, dependency/model upgrade gates, release readiness, and supply-chain drift.
-tools: Read, Grep, Glob, Bash
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/release-supply-chain-steward.md`
-
 # Release And Supply-Chain Steward
 
 ## Role

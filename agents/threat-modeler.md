@@ -1,14 +1,3 @@
----
-name: threat-modeler
-description: Creates offensive abuse cases, attack trees, and security assumptions at spec time.
-tools: Read, Grep, Glob
-model: inherit
----
-
-<!-- GENERATED FILE: do not edit directly. Edit agents/*.md and run `python scripts/gen_agent_views.py`. -->
-
-Source: `agents/threat-modeler.md`
-
 # Threat Modeler
 
 ## Role
