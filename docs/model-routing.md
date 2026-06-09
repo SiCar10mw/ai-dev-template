@@ -36,9 +36,11 @@ placeholder `model_id` values with enterprise-approved model IDs, but the commit
 `config/model-routing.example.json` also defines a specialist `security_review` role for AI-SAST. The default profile is
 Anthropic Mythos / Claude Fable 5 with a pinned model ID, strict JSON output, and low temperature.
 
-That model is only a finder. It produces candidate findings for `ai_dev_template/ai_sast.py`; it never decides merge
-status. `scripts/check_ai_sast.py` applies the deterministic policy over confirmed findings, severity threshold, and
-`.ai-sast-baseline.json`.
+That model is only an evidence producer. It produces candidate findings and proposal-only remediation diffs for
+`ai_dev_template/ai_sast.py`; it never decides merge status or fix status. `scripts/check_ai_sast.py` applies the
+deterministic policy over confirmed findings, severity threshold, and `.ai-sast-baseline.json`.
+`scripts/verify_fix.py` applies proposed patches only in a temporary copy and verifies fixes by re-running the scanner
+plus the configured regression command.
 
 ## Provider Headers
 

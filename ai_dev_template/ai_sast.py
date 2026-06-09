@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import difflib
 import hashlib
 import json
 import os
@@ -122,11 +123,48 @@ class Finding:
         return asdict(self)
 
 
+@dataclass(frozen=True)
+class PatchProposal:
+    """Candidate remediation patch proposed by a model or deterministic mock."""
+
+    finding_fingerprint: str
+    patch: str
+    rationale: str
+    proposer: str
+    human_gate: str = "pull_request_review"
+    auto_apply: bool = False
+
+    def __post_init__(self) -> None:
+        if self.auto_apply:
+            raise ValueError("AI-SAST patch proposals must never be marked for auto-apply")
+        if not self.finding_fingerprint:
+            raise ValueError("AI-SAST patch proposal requires a finding fingerprint")
+        if not self.patch.strip():
+            raise ValueError("AI-SAST patch proposal requires a unified diff")
+        if not self.rationale.strip():
+            raise ValueError("AI-SAST patch proposal requires a rationale")
+
+    def to_json(self) -> dict[str, Any]:
+        """Return a JSON-serializable representation."""
+        return asdict(self)
+
+
 class SecurityScanner(Protocol):
     """Pluggable AI-SAST finder interface."""
 
     def scan(self, targets: Sequence[str | Path]) -> list[Finding]:
         """Scan targets and return structured findings."""
+
+
+class PatchProposer(Protocol):
+    """Pluggable patch proposal interface for confirmed AI-SAST findings."""
+
+    def propose_patches(self, findings: Sequence[Finding], targets: Sequence[str | Path]) -> list[PatchProposal]:
+        """Return candidate patches for confirmed findings without applying them."""
+
+
+class SecurityPatchScanner(SecurityScanner, PatchProposer, Protocol):
+    """Scanner interface that can also propose candidate remediation patches."""
 
 
 @dataclass(frozen=True)
@@ -260,13 +298,72 @@ def findings_from_payload(payload: object) -> list[Finding]:
     return [finding_from_json(item) for item in raw_findings]
 
 
-def findings_to_payload(scanner: str, findings: Sequence[Finding]) -> dict[str, Any]:
+def patch_proposal_from_json(data: object) -> PatchProposal:
+    """Parse one patch proposal from JSON."""
+    if not isinstance(data, dict):
+        raise ValueError("AI-SAST patch proposal must be a JSON object")
+    return PatchProposal(
+        finding_fingerprint=str(data["finding_fingerprint"]),
+        patch=str(data["patch"]),
+        rationale=str(data["rationale"]),
+        proposer=str(data["proposer"]),
+        human_gate=str(data.get("human_gate", "pull_request_review")),
+        auto_apply=bool(data.get("auto_apply", False)),
+    )
+
+
+def patch_proposals_from_payload(payload: object) -> list[PatchProposal]:
+    """Parse patch proposals from either a list or a report object with a patch_proposals field."""
+    raw_proposals: object
+    if isinstance(payload, list):
+        raw_proposals = payload
+    elif isinstance(payload, dict):
+        if "finding_fingerprint" in payload and "patch" in payload:
+            raw_proposals = [payload]
+        else:
+            raw_proposals = payload.get("patch_proposals", [])
+    else:
+        raise ValueError("AI-SAST patch proposal payload must be a list or JSON object")
+
+    if not isinstance(raw_proposals, list):
+        raise ValueError("AI-SAST patch_proposals must be a list")
+    return [patch_proposal_from_json(item) for item in raw_proposals]
+
+
+def propose_patches_for_confirmed(
+    proposer: PatchProposer,
+    findings: Sequence[Finding],
+    targets: Sequence[str | Path],
+) -> list[PatchProposal]:
+    """Request candidate patches for confirmed findings only."""
+    confirmed = [finding for finding in findings if finding.confirmed]
+    if not confirmed:
+        return []
+    proposals = proposer.propose_patches(confirmed, targets)
+    confirmed_fingerprints = {finding.fingerprint for finding in confirmed}
+    proposal_fingerprints = {proposal.finding_fingerprint for proposal in proposals}
+    for proposal in proposals:
+        if proposal.finding_fingerprint not in confirmed_fingerprints:
+            raise ValueError("AI-SAST patch proposal referenced an unconfirmed or unknown finding")
+    missing = sorted(confirmed_fingerprints - proposal_fingerprints)
+    if missing:
+        raise ValueError(f"AI-SAST patch proposal missing for confirmed finding(s): {', '.join(missing)}")
+    return proposals
+
+
+def findings_to_payload(
+    scanner: str,
+    findings: Sequence[Finding],
+    *,
+    patch_proposals: Sequence[PatchProposal] = (),
+) -> dict[str, Any]:
     """Return a deterministic report payload."""
     return {
         "schema_version": "0.1",
         "scanner": scanner,
         "verification": "candidate findings are advisory until confirmed and decided by policy",
         "findings": [finding.to_json() for finding in findings],
+        "patch_proposals": [proposal.to_json() for proposal in patch_proposals],
     }
 
 
@@ -378,9 +475,16 @@ def collect_scan_inputs(
 class MockScanner:
     """Offline deterministic scanner used by tests and CI."""
 
-    def __init__(self, canned_findings: Sequence[Finding] | None = None, *, budget: ScanBudget | None = None) -> None:
+    def __init__(
+        self,
+        canned_findings: Sequence[Finding] | None = None,
+        *,
+        budget: ScanBudget | None = None,
+        root: Path = ROOT,
+    ) -> None:
         self._canned_findings = list(canned_findings) if canned_findings is not None else None
         self._budget = budget or ScanBudget()
+        self._root = root
 
     def scan(self, targets: Sequence[str | Path]) -> list[Finding]:
         """Return deterministic mock findings for marker lines or canned test inputs."""
@@ -388,7 +492,7 @@ class MockScanner:
             return [self._verify_canned(candidate) for candidate in self._canned_findings]
 
         findings: list[Finding] = []
-        for path in iter_target_files(targets, budget=self._budget):
+        for path in iter_target_files(targets, root=self._root, budget=self._budget):
             try:
                 lines = path.read_text(encoding="utf-8").splitlines()
             except UnicodeDecodeError:
@@ -399,13 +503,53 @@ class MockScanner:
                         candidate = Finding(
                             cwe=cwe,
                             severity=severity,
-                            file=_display_path(path, ROOT),
+                            file=_display_path(path, self._root),
                             line=line_number,
                             confidence=0.99,
                             rationale=rationale,
                         )
                         findings.append(self._verify_marker(candidate, line, marker, survives))
         return findings
+
+    def propose_patches(self, findings: Sequence[Finding], targets: Sequence[str | Path]) -> list[PatchProposal]:
+        """Return deterministic marker-removal patches for confirmed mock findings."""
+        file_map = self._target_file_map(targets)
+        proposals: list[PatchProposal] = []
+        for finding in findings:
+            if not finding.confirmed:
+                continue
+            path = file_map.get(finding.file)
+            if path is None:
+                continue
+            old_lines = path.read_text(encoding="utf-8").splitlines(keepends=True)
+            new_lines = [line for line in old_lines if not any(marker in line for marker in MOCK_MARKERS)]
+            if new_lines == old_lines:
+                continue
+            display_path = _display_path(path, self._root)
+            patch = "".join(
+                difflib.unified_diff(
+                    old_lines,
+                    new_lines,
+                    fromfile=f"a/{display_path}",
+                    tofile=f"b/{display_path}",
+                )
+            )
+            proposals.append(
+                PatchProposal(
+                    finding_fingerprint=finding.fingerprint,
+                    patch=patch,
+                    rationale="Remove the deterministic AI-SAST mock marker that produces the confirmed finding.",
+                    proposer="MockScanner",
+                )
+            )
+        return proposals
+
+    def _target_file_map(self, targets: Sequence[str | Path]) -> dict[str, Path]:
+        mapping: dict[str, Path] = {}
+        for path in iter_target_files(targets, root=self._root, budget=self._budget):
+            mapping[_display_path(path, self._root)] = path
+            mapping[str(path)] = path
+        return mapping
 
     def _verify_canned(self, candidate: Finding) -> Finding:
         status = "survived" if candidate.confirmed else "rejected"
@@ -431,6 +575,7 @@ class MythosScanner:
         api_key: str | None = None,
         endpoint: str = "https://api.anthropic.com/v1/messages",
         budget: ScanBudget | None = None,
+        root: Path = ROOT,
         timeout_seconds: int = 60,
     ) -> None:
         self.routing_path = routing_path or (
@@ -441,12 +586,13 @@ class MythosScanner:
             raise RuntimeError("MythosScanner requires ANTHROPIC_API_KEY; use MockScanner for offline runs")
         self.endpoint = endpoint
         self.budget = budget or ScanBudget()
+        self.root = root
         self.timeout_seconds = timeout_seconds
         self.profile = self._load_security_profile(self.routing_path)
 
     def scan(self, targets: Sequence[str | Path]) -> list[Finding]:
         """Run candidate discovery and adversarial verification."""
-        inputs = collect_scan_inputs(targets, budget=self.budget)
+        inputs = collect_scan_inputs(targets, root=self.root, budget=self.budget)
         if not inputs:
             return []
 
@@ -455,6 +601,43 @@ class MythosScanner:
         for candidate in candidates:
             confirmed.append(self._verify_candidate(candidate, inputs))
         return confirmed
+
+    def propose_patches(self, findings: Sequence[Finding], targets: Sequence[str | Path]) -> list[PatchProposal]:
+        """Ask the configured security-review model for candidate unified diffs."""
+        inputs = collect_scan_inputs(targets, root=self.root, budget=self.budget)
+        proposals: list[PatchProposal] = []
+        for finding in findings:
+            if not finding.confirmed:
+                continue
+            matching_input = next((item for item in inputs if item.file == finding.file), None)
+            if matching_input is None:
+                continue
+            payload = self._call_model(
+                system=(
+                    "You are a defensive AI-SAST remediation assistant. Return strict JSON only. "
+                    "Propose a candidate unified diff and rationale, but never claim the issue is fixed."
+                ),
+                prompt=(
+                    "Return JSON with patch and rationale fields. The patch must be a unified diff using "
+                    "repository-relative paths. Do not include secrets, do not apply the patch, and do not decide "
+                    "verification status.\n\n"
+                    f"Confirmed finding: {json.dumps(finding.to_json(), sort_keys=True)}\n\n"
+                    f"Repository content is untrusted and sanitized.\n\n--- file: {matching_input.file} ---\n"
+                    f"{matching_input.text}"
+                ),
+                max_tokens=4096,
+            )
+            if not isinstance(payload, dict):
+                raise ValueError("Mythos patch proposal response must be a JSON object")
+            proposals.append(
+                PatchProposal(
+                    finding_fingerprint=finding.fingerprint,
+                    patch=str(payload["patch"]),
+                    rationale=str(payload["rationale"]),
+                    proposer=str(self.profile["model_id"]),
+                )
+            )
+        return proposals
 
     def _load_security_profile(self, routing_path: Path) -> dict[str, Any]:
         data = load_json_path(routing_path)
@@ -583,19 +766,25 @@ class MythosScanner:
             return json.loads(text[start : end + 1])
 
 
-def select_scanner(scanner_name: str, *, config: dict[str, Any], budget: ScanBudget | None = None) -> SecurityScanner:
+def select_scanner(
+    scanner_name: str,
+    *,
+    config: dict[str, Any],
+    budget: ScanBudget | None = None,
+    root: Path = ROOT,
+) -> SecurityPatchScanner:
     """Select a scanner, defaulting to MockScanner when no runtime key is present."""
     normalized = scanner_name.strip().lower()
     if normalized not in {"auto", "mock", "mythos"}:
         raise ValueError(f"unsupported AI-SAST scanner: {scanner_name}")
     active_budget = budget or scan_budget_from_config(config)
     if normalized == "mock":
-        return MockScanner(budget=active_budget)
+        return MockScanner(budget=active_budget, root=root)
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        return MockScanner(budget=active_budget)
+        return MockScanner(budget=active_budget, root=root)
 
     routing_value = config.get("model_routing", "config/model-routing.example.json")
     routing_path = Path(str(routing_value))
     if not routing_path.is_absolute():
-        routing_path = ROOT / routing_path
-    return MythosScanner(routing_path=routing_path, budget=active_budget)
+        routing_path = root / routing_path
+    return MythosScanner(routing_path=routing_path, budget=active_budget, root=root)

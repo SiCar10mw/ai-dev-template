@@ -51,7 +51,7 @@
     "security_review": {
       "model_profile": "anthropic_mythos_fable_5",
       "preferred_order": ["anthropic_mythos_fable_5", "anthropic_claude", "google_gemini", "openai_codex_gpt"],
-      "purpose": "AI-SAST defensive finder. The model produces structured candidate findings only; scripts/check_ai_sast.py is the deterministic decider.",
+      "purpose": "AI-SAST defensive finder and patch proposer. The model produces structured candidate findings and proposal-only diffs; scripts/check_ai_sast.py and scripts/verify_fix.py are the deterministic deciders.",
       "structured_output": "json",
       "temperature": 0.0
     },

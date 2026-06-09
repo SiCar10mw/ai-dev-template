@@ -15,4 +15,5 @@ ruff check .
 pytest --cov=ai_dev_template --cov=skills --cov=scripts --cov-report=term-missing
 bandit -r ai_dev_template skills scripts -lll -ii
 python scripts/check_ai_sast.py --scanner mock
+python scripts/verify_fix.py --self-test
 pip-audit --requirement requirements.txt --disable-pip --no-deps

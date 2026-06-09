@@ -17,3 +17,6 @@ out/
 node_modules/
 docs-site/.docusaurus/
 docs-site/build/
+
+.mcp.json
+.vscode/mcp.json

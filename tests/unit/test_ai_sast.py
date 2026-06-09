@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ai_dev_template.ai_sast import Baseline, MockScanner, apply_policy
+from ai_dev_template.ai_sast import Baseline, MockScanner, apply_policy, propose_patches_for_confirmed
 
 
 def _marker(*parts: str) -> str:
@@ -45,3 +45,20 @@ def test_ai_sast_ignores_low_and_unconfirmed_findings(tmp_path: Path) -> None:
     assert result.passed
     assert len(result.ignored_findings) == 2
     assert {finding.confirmed for finding in result.ignored_findings} == {False, True}
+
+
+def test_mock_scanner_proposes_patch_for_confirmed_finding_without_applying(tmp_path: Path) -> None:
+    marker = _marker("CONFIRMED", "HIGH")
+    target = _write_marker(tmp_path / "blocked.py", marker)
+    scanner = MockScanner(root=tmp_path)
+
+    findings = scanner.scan(["blocked.py"])
+    proposals = propose_patches_for_confirmed(scanner, findings, ["blocked.py"])
+
+    assert len(proposals) == 1
+    assert proposals[0].finding_fingerprint == findings[0].fingerprint
+    assert proposals[0].auto_apply is False
+    assert proposals[0].human_gate == "pull_request_review"
+    assert "--- a/blocked.py" in proposals[0].patch
+    assert f"-# {marker}" in proposals[0].patch
+    assert marker in target.read_text(encoding="utf-8")

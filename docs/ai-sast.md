@@ -9,6 +9,7 @@ AI-SAST adds a pluggable AI finder to the repository SAST posture without giving
 ```text
 SecurityScanner.scan(targets) -> list[Finding]
 Finding = cwe, severity, file, line, confidence, rationale, confirmed, verification, fingerprint
+PatchProposal = finding_fingerprint, patch, rationale, proposer, human_gate, auto_apply
 ```
 
 The model output is evidence only. `scripts/check_ai_sast.py` is the deterministic decider and blocks only when all of
@@ -17,6 +18,9 @@ these are true:
 1. The finding is confirmed by the adversarial verification pass.
 2. The severity is greater than or equal to the configured threshold.
 3. The finding fingerprint is not accepted in `.ai-sast-baseline.json`.
+
+For confirmed findings, the configured security-review model may also propose a candidate patch. The patch is evidence,
+not authority. Patch proposals are unified diffs with a rationale and `auto_apply=false`.
 
 The default config is `config/ai-sast.example.json`. It selects `auto`, which uses `MockScanner` when
 `ANTHROPIC_API_KEY` is not present. CI therefore stays offline and deterministic by default.
@@ -33,6 +37,11 @@ The finder may be `MockScanner` or `MythosScanner`.
 The decider never asks the model whether to block. It loads JSON and applies a reproducible policy over normalized
 severity, the `confirmed` boolean, and baseline fingerprints.
 
+Patch proposal follows the same boundary. The proposer may be `MockScanner`, `MythosScanner`, or another adapter that
+implements the pluggable interface. The checked-in routing keeps the top-three first-class model views in
+`config/model-routing.example.json`; the security-review profile is a configuration choice, not a hard-coded verdict
+authority.
+
 ## Adversarial Verification Rubric
 
 Every candidate finding receives a second pass before it can become confirmed.
@@ -44,6 +53,80 @@ Every candidate finding receives a second pass before it can become confirmed.
   the candidate and nearby code snippet.
 
 Only confirmed findings can affect the deterministic policy.
+
+## Patch Proposal
+
+After adversarial verification, confirmed findings can receive a proposed remediation patch:
+
+```bash
+python scripts/check_ai_sast.py --scanner auto --targets . --output ai-sast-findings.json
+```
+
+When confirmed findings exist and patch proposals are enabled, the report includes `patch_proposals`. Each proposal
+contains:
+
+- `finding_fingerprint`: the confirmed finding the proposal claims to address.
+- `patch`: a unified diff.
+- `rationale`: why the proposed edit should address the finding.
+- `proposer`: the model or deterministic mock that drafted the patch.
+- `human_gate`: currently `pull_request_review`.
+- `auto_apply`: always false.
+
+`MockScanner` proposes deterministic marker-removal patches for tests. `MythosScanner` asks the configured
+`security_review` profile for a unified diff and rationale. Other first-class or enterprise-approved model adapters can
+implement the same interface without changing the deterministic decider.
+
+## Deterministic Fix Verification
+
+`scripts/verify_fix.py` closes the loop without letting the LLM declare success:
+
+```bash
+python scripts/verify_fix.py \
+  --finding ai-sast-findings.json \
+  --proposal ai-sast-findings.json \
+  --fingerprint <finding-fingerprint> \
+  --scanner mock \
+  --targets path/to/file.py \
+  --test-command pytest
+```
+
+The verifier:
+
+1. Copies the repository to a temporary directory.
+2. Applies the candidate patch only in that temporary copy.
+3. Re-runs the selected scanner against the requested targets.
+4. Confirms the original confirmed finding fingerprint is gone.
+5. Runs the configured regression command in the temporary copy.
+
+The result is verified only when both deterministic checks pass: the finding is gone and the regression command exits
+successfully. Patch application failure, a remaining matching finding, or a failing regression command exits non-zero.
+
+`make check` runs `python scripts/verify_fix.py --self-test`, which exercises the MockScanner closed loop offline and
+also confirms the source tree was not modified.
+
+## Closed Loop
+
+The intended workflow is cyclic and human-gated:
+
+```text
+find -> adversarial-verify -> propose patch -> verify_fix -> PR with patch and before/after evidence -> human approval -> merge
+```
+
+The pull request is the approval gate. A verified patch is still only a candidate until a human reviews and approves the
+PR. Agents and scripts may prepare the branch, patch, and evidence, but they do not self-approve, self-merge, deploy, or
+publish.
+
+## Reference Harness Comparison
+
+The requested Anthropic-style reference harness shape is useful because it does not stop at a static finding. It moves
+from finding to verification, proposes a repair, and re-tests the proof of concept after the repair.
+
+This repository adopts that closed-loop shape and adds two project constraints:
+
+- **Model-agnostic and pluggable**: the scanner/proposer interface can be implemented by the configured security-review
+  model, MockScanner, or another approved top-three/enterprise adapter.
+- **Deterministic decider**: model output is never the verdict. `scripts/check_ai_sast.py` decides finding policy, and
+  `scripts/verify_fix.py` decides fix verification from re-scan output plus the regression command exit code.
 
 ## Cadences
 

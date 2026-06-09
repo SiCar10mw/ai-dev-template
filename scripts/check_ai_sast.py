@@ -16,6 +16,7 @@ from ai_dev_template.ai_sast import (
     load_ai_sast_config,
     load_baseline,
     load_json_path,
+    propose_patches_for_confirmed,
     scan_budget_from_config,
     select_scanner,
 )
@@ -43,6 +44,11 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--config", default="config/ai-sast.example.json", help="AI-SAST policy config path.")
     parser.add_argument("--findings", help="Existing findings JSON to evaluate instead of running a scanner.")
     parser.add_argument("--output", help="Write the findings report JSON to this path.")
+    parser.add_argument(
+        "--no-patch-proposals",
+        action="store_true",
+        help="Skip candidate patch proposals for confirmed findings.",
+    )
     parser.add_argument("--baseline", help="Accepted findings baseline path.")
     parser.add_argument("--threshold", help="Minimum confirmed severity that blocks.")
     parser.add_argument("--scanner", choices=["auto", "mock", "mythos"], help="Finder implementation to use.")
@@ -74,6 +80,7 @@ def main() -> int:
     baseline = load_baseline(baseline_path)
 
     scanner_label = "loaded-json"
+    patch_proposals = []
     if args.findings:
         findings_path = Path(args.findings)
         if not findings_path.is_absolute():
@@ -103,8 +110,10 @@ def main() -> int:
         scanner = select_scanner(scanner_name, config=config, budget=budget)
         scanner_label = _scanner_label(scanner)
         findings = scanner.scan(target_values)
+        if not args.no_patch_proposals:
+            patch_proposals = propose_patches_for_confirmed(scanner, findings, target_values)
 
-    report = findings_to_payload(scanner_label, findings)
+    report = findings_to_payload(scanner_label, findings, patch_proposals=patch_proposals)
     if args.output:
         output_path = Path(args.output)
         if not output_path.is_absolute():
