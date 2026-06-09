@@ -60,7 +60,7 @@
     "google_gemini": {
       "provider": "google",
       "model_family": "gemini",
-      "model_id": "gemini-enterprise-default"
+      "model_id": "gemini-3.1-pro"
     },
     "openai_codex_gpt": {
       "provider": "openai",

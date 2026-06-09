@@ -16,7 +16,7 @@
       "tool": "Google Gemini",
       "provider": "google",
       "model_family": "gemini",
-      "model_id": "gemini-enterprise-default"
+      "model_id": "gemini-3.1-pro"
     },
     {
       "rank": 3,

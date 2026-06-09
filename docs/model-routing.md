@@ -44,3 +44,7 @@ status. `scripts/check_ai_sast.py` applies the deterministic policy over confirm
 
 Headers and provider-specific settings belong in the runtime client, environment, or enterprise config. Use committed
 files only to document which variables are expected and which component consumes them.
+
+## Copilot and Gemini Pro
+
+GitHub Copilot is a CLIENT that can serve any approved model — including **Gemini 3.1 Pro**. Copilot's model selection is governed by the same `approved-models` list, and the Copilot instructions are model-agnostic: they hold regardless of which top-three model Copilot is running.
