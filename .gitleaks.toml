@@ -1,0 +1,10 @@
+title = "ai-dev-template gitleaks baseline"
+
+[allowlist]
+description = "Allow documentation-only placeholder names, not real secret values."
+regexes = [
+  '''OPENAI_API_KEY''',
+  '''ANTHROPIC_API_KEY''',
+  '''GEMINI_API_KEY''',
+  '''AZURE_CLIENT_SECRET''',
+]

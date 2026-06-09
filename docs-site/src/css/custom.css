@@ -1,0 +1,13 @@
+:root {
+  --ifm-color-primary: #1f4e79;
+  --ifm-color-primary-dark: #1b456b;
+  --ifm-color-primary-darker: #193f62;
+  --ifm-color-primary-darkest: #14334f;
+  --ifm-color-primary-light: #255b8b;
+  --ifm-color-primary-lighter: #2a6497;
+  --ifm-color-primary-lightest: #336fa5;
+}
+
+body {
+  letter-spacing: 0;
+}

@@ -1,0 +1,20 @@
+{
+  "artifact": "m365-publish-plan",
+  "artifacts": [
+    "aibom/aibom.json",
+    "governance/governance-evidence.json",
+    "architecture/project-architecture.mmd",
+    "documents/reference.docx",
+    "decks/executive-brief.pptx",
+    "decks/committee-brief.pptx"
+  ],
+  "external_writes": false,
+  "generated_by": "scripts/gen_all_artifacts.py",
+  "mode": "dry-run",
+  "requires_human_approval_for_real_publish": true,
+  "schema_version": "0.1",
+  "targets": [
+    "SharePoint governed evidence library",
+    "Teams governance committee channel"
+  ]
+}

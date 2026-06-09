@@ -1,0 +1,30 @@
+{
+  "tenant": {
+    "authority": "https://login.microsoftonline.com/${AZURE_TENANT_ID}",
+    "client_id_env": "AZURE_CLIENT_ID",
+    "credential_source": "managed_identity_or_secret_manager"
+  },
+  "publish_targets": [
+    {
+      "name": "governance-documents",
+      "type": "sharepoint-library",
+      "site_url": "https://contoso.sharepoint.com/sites/ai-governance",
+      "library": "Generated Evidence",
+      "sensitivity_label": "Internal",
+      "retention_label": "Governance Evidence"
+    },
+    {
+      "name": "committee-channel",
+      "type": "teams-channel",
+      "team": "AI Governance",
+      "channel": "Committee Materials",
+      "sensitivity_label": "Confidential",
+      "retention_label": "Committee Record"
+    }
+  ],
+  "rules": [
+    "This file is an example; replace tenant and target values during bootstrap.",
+    "Do not commit secrets.",
+    "Publication requires human approval."
+  ]
+}

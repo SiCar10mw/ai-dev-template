@@ -1,0 +1,21 @@
+.DS_Store
+.env
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+dist/
+build/
+*.egg-info/
+out/
+node_modules/
+docs-site/.docusaurus/
+docs-site/build/
+
+# Local MCP configs — only the .example is committed
+.mcp.json
+.vscode/mcp.json

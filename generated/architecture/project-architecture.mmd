@@ -1,0 +1,10 @@
+flowchart LR
+    Human[Human owner] --> Backlog[Symphony backlog]
+    Backlog --> Agents[Core agent fireteam]
+    Agents --> Specs[Spec-first artifacts]
+    Specs --> Code[Code and tests]
+    Code --> Gates[Local equals CI gates]
+    Gates --> Generated[Generated evidence artifacts]
+    Generated --> Docs[Docs and docs-site]
+    Generated --> M365[M365 governed publication]
+    Gates --> PR[Human-reviewed pull request]

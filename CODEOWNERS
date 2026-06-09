@@ -1,0 +1,14 @@
+# Replace @owner with the project maintainer, team, or governance group during bootstrap.
+
+* @owner
+
+CONSTITUTION.md @owner
+STANDARDS.md @owner
+AGENTS.md @owner
+CLAUDE.md @owner
+GEMINI.md @owner
+.github/** @owner
+.mcp.json @owner
+.vscode/mcp.json @owner
+docs/** @owner
+docs-site/** @owner

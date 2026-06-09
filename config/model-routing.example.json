@@ -1,0 +1,37 @@
+{
+  "default_client": "github-copilot-cli",
+  "source_of_truth": "This file documents preferred model roles. The active client or enterprise policy decides availability.",
+  "rules": [
+    "Do not commit provider API keys, bearer tokens, OAuth refresh tokens, or private endpoint URLs.",
+    "Use repository configuration for model roles; do not rely on model memory for provider selection.",
+    "Use deterministic tools for verdicts, gate results, approval state, and release status."
+  ],
+  "model_roles": {
+    "primary_coding": {
+      "preferred_order": ["gpt", "anthropic", "gemini"],
+      "purpose": "Implementation, refactoring, test generation, and local reasoning."
+    },
+    "independent_review": {
+      "preferred_order": ["anthropic", "gpt", "gemini"],
+      "purpose": "Adversarial review with a different model family from the primary coding pass when available."
+    },
+    "documentation": {
+      "preferred_order": ["gpt", "anthropic", "gemini"],
+      "purpose": "Contributor docs, public docs-site copy, DOCX drafts, and deck drafts."
+    }
+  },
+  "provider_headers": {
+    "openai_or_azure_openai": {
+      "api_key": "Set OPENAI_API_KEY or Azure OpenAI credentials in the environment or secret manager.",
+      "notes": "Never store authorization headers in this file."
+    },
+    "anthropic": {
+      "api_key": "Set ANTHROPIC_API_KEY in the environment or secret manager.",
+      "version_header": "Set the provider-required version header in the client configuration, not in committed secrets."
+    },
+    "gemini": {
+      "api_key": "Set GEMINI_API_KEY or the enterprise-approved equivalent in the environment or secret manager.",
+      "notes": "Use the Copilot CLI model picker or enterprise policy where available."
+    }
+  }
+}

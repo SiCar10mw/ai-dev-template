@@ -1,0 +1,314 @@
+{
+  "schema_version": "0.1",
+  "description": "Each mandatory principle must have at least one build-failing tripwire and a negative probe.",
+  "principles": [
+    {
+      "id": "P01",
+      "statement": "Constitution-first governance: numbered project principles take precedence and conflicts are flagged to a human.",
+      "profile": "core",
+      "tripwires": ["check_template_conformance.py:required_files", "check_template_conformance.py:standards_phrases"],
+      "negative_probe": "remove CONSTITUTION.md from REQUIRED_FILES"
+    },
+    {
+      "id": "P02",
+      "statement": "Two-domain governance: AI-building SDLC governance and AI-usage governance are related but never conflated.",
+      "profile": "core",
+      "tripwires": ["check_template_conformance.py:required_files", "check_principle_tripwires.py:standards_registry_match"],
+      "negative_probe": "remove GOVERNANCE.md or the standards row"
+    },
+    {
+      "id": "P03",
+      "statement": "Least privilege and read-only-by-default for external systems; writes require explicit human approval.",
+      "profile": "core",
+      "tripwires": ["check_mcp_configs", "check_agent_roster", "PR template external-write evidence"],
+      "negative_probe": "enable a default MCP server or remove human approval text"
+    },
+    {
+      "id": "P04",
+      "statement": "Deterministic authority: anything that must be true is decided by code, rules, tests, schemas, or CI, not by an LLM.",
+      "profile": "core",
+      "tripwires": ["tests/unit/test_verdict_golden.py", "ai_dev_template/verdicts.py"],
+      "negative_probe": "change deterministic verdict output"
+    },
+    {
+      "id": "P05",
+      "statement": "Evidence integrity: generated artifacts are timestamped when appropriate, schema-conformant when a schema exists, and kept in-repo.",
+      "profile": "core",
+      "tripwires": ["check_generated_artifacts.py", "generated/governance/governance-evidence.json"],
+      "negative_probe": "edit committed generated evidence by hand"
+    },
+    {
+      "id": "P06",
+      "statement": "Trust-boundary sanitization: external input is sanitized before LLM consumption or command/file boundaries.",
+      "profile": "core",
+      "tripwires": ["tests/unit/test_sanitize.py", "ai_dev_template/sanitize.py"],
+      "negative_probe": "allow raw external text through sanitizer"
+    },
+    {
+      "id": "P07",
+      "statement": "Source-of-truth authority: repository files, configs, catalogs, schemas, and tests beat memory or model recall.",
+      "profile": "core",
+      "tripwires": ["check_required_files", "docs/copilot-memory.md", "docs/session-memory.md"],
+      "negative_probe": "remove source-of-truth docs or memory warning"
+    },
+    {
+      "id": "P08",
+      "statement": "Copilot Memory, when available, is supplemental context only; committed files remain authoritative.",
+      "profile": "core",
+      "tripwires": ["docs/copilot-memory.md", ".github/copilot-instructions.md"],
+      "negative_probe": "remove advisory-only Copilot Memory rule"
+    },
+    {
+      "id": "P09",
+      "statement": "Model/provider routing is explicit, secret-free, and subordinate to deterministic gates.",
+      "profile": "core",
+      "tripwires": ["config/model-routing.example.json", "config/approved-models.example.json", "check_no_secrets.py"],
+      "negative_probe": "add secret-like model credential or remove approved model config"
+    },
+    {
+      "id": "P10",
+      "statement": "Governed MCP tool access: external tools are registered, least-privilege, and human-approved before writes.",
+      "profile": "core",
+      "tripwires": ["check_mcp_configs", ".mcp.json", ".vscode/mcp.json"],
+      "negative_probe": "enable default external MCP server"
+    },
+    {
+      "id": "P11",
+      "statement": "Copilot-native repository instructions are committed and aligned with the constitution.",
+      "profile": "core",
+      "tripwires": ["check_required_files", ".github/copilot-instructions.md"],
+      "negative_probe": "delete Copilot repository instructions"
+    },
+    {
+      "id": "P12",
+      "statement": "Durable architecture/security decisions are recorded in source control.",
+      "profile": "core",
+      "tripwires": ["docs/adr/0001-record-architecture-decisions.md", "docs/threat-model.md"],
+      "negative_probe": "remove ADR or threat model files"
+    },
+    {
+      "id": "P13",
+      "statement": "Secrets are never committed and never enter VCS.",
+      "profile": "core",
+      "tripwires": ["pre-commit:gitleaks", "ci:gitleaks secret scan", "check_no_secrets.py"],
+      "negative_probe": "commit secret-shaped token"
+    },
+    {
+      "id": "P14",
+      "statement": "Static type hints are checked, not merely requested by convention.",
+      "profile": "core",
+      "tripwires": ["pre-commit:mypy", "ci:type-check", "scripts/ci_check.sh:mypy"],
+      "negative_probe": "add untyped or type-invalid Python function"
+    },
+    {
+      "id": "P15",
+      "statement": "Quality gates before commit or merge: typed, linted, green, offline tests.",
+      "profile": "core",
+      "tripwires": ["scripts/ci_check.sh", ".github/workflows/ci.yml", "Makefile:check"],
+      "negative_probe": "remove a required command from ci_check"
+    },
+    {
+      "id": "P16",
+      "statement": "Local equals CI: the same commands run locally and in CI; bare test runner behavior matches `python -m pytest`.",
+      "profile": "core",
+      "tripwires": ["check_make_ci_parity", "pyproject.toml:pytest pythonpath/testpaths"],
+      "negative_probe": "remove pytest pythonpath or make check parity"
+    },
+    {
+      "id": "P17",
+      "statement": "Deterministic-output tripwire: important deterministic outputs have committed golden fixtures.",
+      "profile": "core",
+      "tripwires": ["tests/unit/test_verdict_golden.py", "tests/fixtures/goldens/verdict_pass.json"],
+      "negative_probe": "change golden verdict bytes"
+    },
+    {
+      "id": "P18",
+      "statement": "Generated artifacts are generated, never hand-edited, and stale generated artifacts fail the build.",
+      "profile": "core",
+      "tripwires": ["check_generated_artifacts.py", "tests/unit/test_generated_artifacts.py"],
+      "negative_probe": "hand-edit generated artifact"
+    },
+    {
+      "id": "P19",
+      "statement": "AIBOM is generated as AI inventory evidence.",
+      "profile": "core",
+      "tripwires": ["scripts/gen_aibom.py", "generated/aibom/aibom.json", "check_generated_artifacts.py"],
+      "negative_probe": "remove generated AIBOM"
+    },
+    {
+      "id": "P20",
+      "statement": "Governance evidence is generated from repository source.",
+      "profile": "core",
+      "tripwires": ["scripts/gen_governance_evidence.py", "generated/governance/governance-evidence.json"],
+      "negative_probe": "stale governance evidence hash"
+    },
+    {
+      "id": "P21",
+      "statement": "Self-contained tests: tests own fixtures, avoid network and credentials, and do not depend on sibling side effects, gitignored artifacts, or today's date.",
+      "profile": "core",
+      "tripwires": ["tests/README.md", "pytest", "check_no_secrets.py"],
+      "negative_probe": "test depends on secret, network, or generated side effect"
+    },
+    {
+      "id": "P22",
+      "statement": "Gate-before-merge: secrets, type check, generated drift, lint, tests with coverage, SAST, and dependency audit block merge.",
+      "profile": "core",
+      "tripwires": [".github/workflows/ci.yml", "scripts/ci_check.sh"],
+      "negative_probe": "remove blocking CI job"
+    },
+    {
+      "id": "P23",
+      "statement": "Machine-user pull request flow: bot may author PRs; human approves; bot cannot self-approve or self-merge.",
+      "profile": "core",
+      "tripwires": ["docs/machine-user-pr-flow.md", ".github/pull_request_template.md", ".claude/agents/backlog-worker.md"],
+      "negative_probe": "remove no-self-merge rule"
+    },
+    {
+      "id": "P24",
+      "statement": "Machine-user identity is scoped, gated, and audited without hardcoded credentials.",
+      "profile": "core",
+      "tripwires": ["docs/machine-user-pr-flow.md", "check_profile_boundary.py", "check_no_secrets.py"],
+      "negative_probe": "hardcode machine-user credential or require enterprise identity in core"
+    },
+    {
+      "id": "P25",
+      "statement": "Symphony backlog loop: human curates; worker claims one item, moves it through the board, and stops for approval.",
+      "profile": "core",
+      "tripwires": ["check_backlog_human_only", ".claude/agents/backlog-worker.md"],
+      "negative_probe": "remove Human-only section or stop-for-approval rule"
+    },
+    {
+      "id": "P26",
+      "statement": "Core agent fireteam ships with every project.",
+      "profile": "core",
+      "tripwires": ["check_agent_roster", "docs/agent-fireteam.md"],
+      "negative_probe": "remove required persona file"
+    },
+    {
+      "id": "P27",
+      "statement": "Agents are approved-models-only, audit-logged, no-exfil, and sensitivity-aware.",
+      "profile": "core",
+      "tripwires": ["check_agent_roster", "config/approved-models.example.json"],
+      "negative_probe": "remove agent binding phrase"
+    },
+    {
+      "id": "P28",
+      "statement": "Playbook -> weapon -> gate maturity: every capability climbs documented -> automated -> enforced.",
+      "profile": "core",
+      "tripwires": ["docs/agent-fireteam.md", "check_principle_tripwires.py"],
+      "negative_probe": "remove playbook/weapon/gate documentation"
+    },
+    {
+      "id": "P29",
+      "statement": "Independent/adversarial review: a second AI attempts to refute the first AI's output; humans adjudicate disagreements.",
+      "profile": "core",
+      "tripwires": ["docs/independent-review.md", "review-prompt.md", ".claude/agents/independent-reviewer.md"],
+      "negative_probe": "remove refute/adjudicate language"
+    },
+    {
+      "id": "P30",
+      "statement": "Spec-first delivery: every meaningful feature flows through specify -> plan -> tasks -> implement.",
+      "profile": "core",
+      "tripwires": ["specs/TEMPLATE/spec.md", "specs/TEMPLATE/plan.md", "specs/TEMPLATE/tasks.md"],
+      "negative_probe": "remove spec template"
+    },
+    {
+      "id": "P31",
+      "statement": "Honest documentation: current and target state are labeled separately and docs must match code.",
+      "profile": "core",
+      "tripwires": ["docs/docs-boundary.md", "scripts/check_docs_impact.py"],
+      "negative_probe": "remove current-vs-target documentation rule"
+    },
+    {
+      "id": "P32",
+      "statement": "Documentation impact gate: every implementation change includes internal docs, public docs-site/wiki docs, or an explicit no-docs-impact decision.",
+      "profile": "core",
+      "tripwires": ["scripts/check_docs_impact.py", "tests/unit/test_docs_impact.py"],
+      "negative_probe": "change code without docs-impact entry"
+    },
+    {
+      "id": "P33",
+      "statement": "Three-tier docs boundary: public, contributor, and corporate-governed docs are deliberately separated without making corporate systems a core dependency.",
+      "profile": "core",
+      "tripwires": ["docs/docs-boundary.md", "check_profile_boundary.py"],
+      "negative_probe": "make corporate docs system required for core check"
+    },
+    {
+      "id": "P34",
+      "statement": "Public wiki/docs-site is curated by audience and built from repository source.",
+      "profile": "core",
+      "tripwires": ["scripts/check_docs_site.py", ".github/workflows/docs-site.yml"],
+      "negative_probe": "remove docs-site build config"
+    },
+    {
+      "id": "P35",
+      "statement": "Corporate-governed docs are profile-gated add-ons for policy, registry, RACI, retention, and access control.",
+      "profile": "core",
+      "tripwires": ["check_profile_boundary.py", "docs/m365-integration.md"],
+      "negative_probe": "require M365 in scripts/ci_check.sh"
+    },
+    {
+      "id": "P36",
+      "statement": "Document generation is reproducible from committed source.",
+      "profile": "core",
+      "tripwires": ["tests/integration/test_document_generation.py", "check_generated_artifacts.py"],
+      "negative_probe": "make generated DOCX/PPTX nondeterministic"
+    },
+    {
+      "id": "P37",
+      "statement": "Diagram source of truth is explicit and maintainable.",
+      "profile": "core",
+      "tripwires": ["docs/diagramming.md", "generated/architecture/project-architecture.mmd"],
+      "negative_probe": "remove diagram source reference"
+    },
+    {
+      "id": "P38",
+      "statement": "Corporate tenant data governance is optional and complements, never replaces, in-repo sanitization.",
+      "profile": "core",
+      "tripwires": ["check_profile_boundary.py", "docs/m365-integration.md", "tests/unit/test_sanitize.py"],
+      "negative_probe": "make Purview required for sanitizer gate"
+    },
+    {
+      "id": "P39",
+      "statement": "Governed generated-output publication is dry-run by default and real external publication is profile-gated.",
+      "profile": "core",
+      "tripwires": ["scripts/publish_m365_stub.py", "check_profile_boundary.py"],
+      "negative_probe": "publisher performs external write by default"
+    },
+    {
+      "id": "P40",
+      "statement": "Framework anchoring maps principles to AI governance frameworks and enforcement locations.",
+      "profile": "core",
+      "tripwires": ["docs/ai-governance-mapping.md", "check_principle_tripwires.py"],
+      "negative_probe": "remove framework mapping row"
+    },
+    {
+      "id": "P41",
+      "statement": "Blast-radius check before edits.",
+      "profile": "core",
+      "tripwires": ["docs/safety-habits.md", "CLAUDE.md", "AGENTS.md"],
+      "negative_probe": "remove blast-radius operating rule"
+    },
+    {
+      "id": "P42",
+      "statement": "Look-before-you-delete.",
+      "profile": "core",
+      "tripwires": ["docs/safety-habits.md", "CLAUDE.md", ".claude/agents/backlog-worker.md"],
+      "negative_probe": "remove look-before-delete operating rule"
+    },
+    {
+      "id": "P43",
+      "statement": "Progressive discovery for agent capabilities, distinct from progressive loading in UI.",
+      "profile": "core",
+      "tripwires": ["skills/README.md", "skills/example_skill/SKILL.md", "check_skill_metadata"],
+      "negative_probe": "remove skill metadata"
+    },
+    {
+      "id": "P44",
+      "statement": "Personal-scale default: core checks run without M365, Entra, Purview, or any enterprise tenant.",
+      "profile": "core",
+      "tripwires": ["check_profile_boundary.py", "scripts/ci_check.sh"],
+      "negative_probe": "add enterprise-only command to make check"
+    }
+  ]
+}

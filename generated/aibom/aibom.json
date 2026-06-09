@@ -1,0 +1,39 @@
+{
+  "agents": [
+    ".claude/agents/backlog-worker.md",
+    ".claude/agents/docs-drift-guardian.md",
+    ".claude/agents/governance-control-mapper.md",
+    ".claude/agents/independent-reviewer.md",
+    ".claude/agents/orchestrator.md",
+    ".claude/agents/privacy-data-classifier.md",
+    ".claude/agents/security-reviewer.md",
+    ".claude/agents/spec-author.md"
+  ],
+  "artifact": "AIBOM",
+  "generated_by": "scripts/gen_aibom.py",
+  "mcp_configs": [
+    ".mcp.json",
+    ".mcp.example.json",
+    ".vscode/mcp.json",
+    ".vscode/mcp.example.json"
+  ],
+  "model_configs": [
+    "config/model-routing.example.json",
+    "config/approved-models.example.json"
+  ],
+  "quality_gates": [
+    "template conformance",
+    "documentation impact",
+    "generated artifact drift",
+    "gitleaks secret scan",
+    "mypy type check",
+    "ruff lint",
+    "bare pytest with coverage",
+    "bandit SAST",
+    "pip-audit dependency audit"
+  ],
+  "schema_version": "0.1",
+  "skills": [
+    "skills/example_skill/SKILL.md"
+  ]
+}

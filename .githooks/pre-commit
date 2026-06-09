@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if command -v pre-commit >/dev/null 2>&1; then
+  pre-commit run --config .pre-commit-config.yaml --hook-stage pre-commit
+else
+  python scripts/check_template_conformance.py
+  python scripts/check_docs_impact.py --staged
+  python scripts/check_generated_artifacts.py
+  python scripts/check_no_secrets.py
+  mypy ai_dev_template scripts skills
+fi

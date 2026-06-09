@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "lucidDeveloperDocs": {
+      "type": "http",
+      "url": "https://lucid-developer-docs.readme.io/mcp",
+      "tools": ["*"]
+    }
+  }
+}

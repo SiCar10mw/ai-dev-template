@@ -1,0 +1,39 @@
+minimum_pre_commit_version: "4.0.0"
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.0
+    hooks:
+      - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff
+        entry: ruff check .
+        language: system
+        pass_filenames: false
+
+      - id: mypy
+        name: mypy
+        entry: mypy ai_dev_template scripts skills
+        language: system
+        pass_filenames: false
+
+      - id: generated-artifacts
+        name: generated artifact drift tripwire
+        entry: python scripts/check_generated_artifacts.py
+        language: system
+        pass_filenames: false
+
+      - id: docs-impact
+        name: documentation impact
+        entry: python scripts/check_docs_impact.py --staged
+        language: system
+        pass_filenames: false
+
+      - id: template-conformance
+        name: template conformance
+        entry: make conformance
+        language: system
+        pass_filenames: false

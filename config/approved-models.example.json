@@ -1,0 +1,19 @@
+{
+  "policy": "Only use model families and clients approved by the project owner or enterprise AI governance process.",
+  "approved_clients": [
+    "github-copilot-cli",
+    "vscode-github-copilot",
+    "enterprise-approved-direct-client"
+  ],
+  "approved_model_families": [
+    "gpt",
+    "anthropic",
+    "gemini"
+  ],
+  "rules": [
+    "Do not send restricted data to models unless the enterprise policy explicitly allows it.",
+    "Use a different approved model family for independent review when available.",
+    "Model output is advisory until deterministic gates validate it.",
+    "Approval state, release state, and compliance verdicts are never set by a model."
+  ]
+}
