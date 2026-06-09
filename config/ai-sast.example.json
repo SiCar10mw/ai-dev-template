@@ -1,0 +1,18 @@
+{
+  "schema_version": "0.1",
+  "scanner": "auto",
+  "default_offline_scanner": "mock",
+  "threshold": "high",
+  "baseline": ".ai-sast-baseline.json",
+  "model_routing": "config/model-routing.example.json",
+  "targets": [
+    "ai_dev_template",
+    "scripts",
+    "skills"
+  ],
+  "budget": {
+    "max_files": 80,
+    "max_bytes_per_file": 60000,
+    "max_total_bytes": 400000
+  }
+}

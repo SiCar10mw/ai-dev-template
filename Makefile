@@ -1,4 +1,4 @@
-.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check no-secrets type-check lint test sast dependency-audit documents reference-docx project-brief-deck docs-site-build
+.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check no-secrets type-check lint test sast ai-sast dependency-audit documents reference-docx project-brief-deck docs-site-build
 
 check:
 	./scripts/ci_check.sh
@@ -38,6 +38,9 @@ test:
 
 sast:
 	bandit -r ai_dev_template skills scripts -lll -ii
+
+ai-sast:
+	python scripts/check_ai_sast.py --scanner mock
 
 dependency-audit:
 	pip-audit --requirement requirements.txt --disable-pip --no-deps

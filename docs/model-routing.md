@@ -31,6 +31,15 @@ Copy it to a project-specific config file only if the project needs concrete pro
 The example config covers one Claude profile, one Gemini profile, and one GPT/Codex profile. Projects may replace the
 placeholder `model_id` values with enterprise-approved model IDs, but the committed file must stay secret-free.
 
+## Security Review Finder
+
+`config/model-routing.example.json` also defines a specialist `security_review` role for AI-SAST. The default profile is
+Anthropic Mythos / Claude Fable 5 with a pinned model ID, strict JSON output, and low temperature.
+
+That model is only a finder. It produces candidate findings for `ai_dev_template/ai_sast.py`; it never decides merge
+status. `scripts/check_ai_sast.py` applies the deterministic policy over confirmed findings, severity threshold, and
+`.ai-sast-baseline.json`.
+
 ## Provider Headers
 
 Headers and provider-specific settings belong in the runtime client, environment, or enterprise config. Use committed

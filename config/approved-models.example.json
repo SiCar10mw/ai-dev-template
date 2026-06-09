@@ -37,16 +37,25 @@
   ],
   "approved_model_families": [
     "claude",
+    "claude-fable",
     "gemini",
     "gpt",
     "codex",
-    "gpt-codex"
+    "gpt-codex",
+    "mythos"
   ],
   "default_profiles": {
     "anthropic_claude": {
       "provider": "anthropic",
       "model_family": "claude",
       "model_id": "claude-enterprise-default"
+    },
+    "anthropic_mythos_fable_5": {
+      "provider": "anthropic",
+      "model_family": "claude-fable",
+      "model_id": "claude-fable-5-mythos-20260601",
+      "pinned": true,
+      "purpose": "defensive security review finder only"
     },
     "google_gemini": {
       "provider": "google",

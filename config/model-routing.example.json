@@ -48,15 +48,37 @@
       "preferred_order": ["google_gemini", "anthropic_claude", "openai_codex_gpt"],
       "purpose": "Adversarial review with a different model family from the primary coding pass when available."
     },
+    "security_review": {
+      "model_profile": "anthropic_mythos_fable_5",
+      "preferred_order": ["anthropic_mythos_fable_5", "anthropic_claude", "google_gemini", "openai_codex_gpt"],
+      "purpose": "AI-SAST defensive finder. The model produces structured candidate findings only; scripts/check_ai_sast.py is the deterministic decider.",
+      "structured_output": "json",
+      "temperature": 0.0
+    },
     "documentation": {
       "preferred_order": ["openai_codex_gpt", "anthropic_claude", "google_gemini"],
       "purpose": "Contributor docs, public docs-site copy, DOCX drafts, and deck drafts."
+    }
+  },
+  "specialist_profiles": {
+    "anthropic_mythos_fable_5": {
+      "provider": "anthropic",
+      "model_family": "claude-fable",
+      "model_id": "claude-fable-5-mythos-20260601",
+      "api_version": "2023-06-01",
+      "pinned": true,
+      "purpose": "defensive security review finder only"
     }
   },
   "provider_headers": {
     "openai_codex_gpt": {
       "api_key": "Set OPENAI_API_KEY or Azure OpenAI credentials in the environment or secret manager.",
       "notes": "Never store authorization headers in this file."
+    },
+    "anthropic_mythos_fable_5": {
+      "api_key": "Set ANTHROPIC_API_KEY in the environment or secret manager.",
+      "version_header": "Use the pinned provider API version in the runtime client; do not commit secrets.",
+      "notes": "Public Fable 5 cyber policy gates offensive analysis. This route is for defensive code scanning only and may refuse offensive requests."
     },
     "anthropic_claude": {
       "api_key": "Set ANTHROPIC_API_KEY in the environment or secret manager.",
