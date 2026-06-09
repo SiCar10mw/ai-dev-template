@@ -18,10 +18,12 @@ Example: Python projects use `ruff` and `pytest`; a TypeScript project might use
 | Source-of-truth authority: repository files, configs, catalogs, schemas, and tests beat memory or model recall. | `CONSTITUTION.md`, `AGENTS.md`, `docs/methodology.md` |
 | Copilot Memory, when available, is supplemental context only; committed files remain authoritative. | `docs/copilot-memory.md`, GitHub Copilot Memory settings |
 | Model/provider routing is explicit, secret-free, and subordinate to deterministic gates. | `config/model-routing.example.json`, `config/approved-models.example.json`, `docs/model-routing.md` |
+| Centralized identity management: human and machine identities come from a central identity provider; machine identities are managed, scoped, conditional-access gated, audited, and short-lived. | `docs/identity.md`; recommended default Microsoft Entra ID; alternatives include Okta, Google Cloud IAM / Workspace, and AWS IAM Identity Center |
 | Governed MCP tool access: external tools are registered, least-privilege, and human-approved before writes. | `.mcp.json`, `.vscode/mcp.json`, `docs/mcp-and-tooling.md` |
 | Copilot-native repository instructions are committed and aligned with the constitution. | `.github/copilot-instructions.md`, `.github/instructions/*.instructions.md`, `AGENTS.md` |
 | Durable architecture/security decisions are recorded in source control. | `docs/adr/`, `docs/threat-model.md`, `docs/release.md` |
 | Secrets are never committed and never enter VCS. | Gitleaks, `.pre-commit-config.yaml`, `.gitleaks.toml`, blocking `secrets` CI job |
+| Central secrets manager: secrets come from a central secrets manager at runtime; tracked files and plain `.env` files contain only placeholder shape, never real values. | `SECRETS.md`, `config/secrets.example.json`, `ai_dev_template/secrets.py`; recommended default Azure Key Vault; alternatives include HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, 1Password/Doppler, and OS keyring for local only |
 | Static type hints are checked, not merely requested by convention. | mypy, `.pre-commit-config.yaml`, blocking `type-check` CI job |
 | Quality gates before commit or merge: typed, linted, green, offline tests. | `pyproject.toml`, `ruff`, `mypy`, `pytest`, `bandit`, `pip-audit`, `Makefile`, `.github/workflows/ci.yml` |
 | Local equals CI: the same commands run locally and in CI; bare test runner behavior matches `python -m pytest`. | `scripts/ci_check.sh`, `Makefile`, `pyproject.toml` with `pythonpath = ["."]` and `testpaths = ["tests"]` |
@@ -76,6 +78,8 @@ When replacing a recommended tool, document the replacement in this file and pre
 | Lucid Chart MCP | Mermaid, PlantUML, Graphviz, draw.io, Miro | Maintainable diagram source of truth |
 | `python-docx` / `python-pptx` | Pandoc, Quarto, Office templates, Google Docs API | Reproducible document generation |
 | Microsoft Entra ID service principal | GitHub App, workload identity, managed identity | Scoped machine-user identity |
+| Microsoft Entra ID | Okta, Google Cloud IAM / Workspace, AWS IAM Identity Center | Central identity and managed machine-user identity |
+| Azure Key Vault | HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, 1Password/Doppler, OS keyring for local only | Central secrets manager |
 | Microsoft Purview labels + DLP | Enterprise DLP/classification equivalent | Tenant-level data governance |
 | SharePoint/Teams | Confluence, Google Drive, enterprise records system | Corporate-governed publication |
 | git worktrees | containers, ephemeral VMs | Parallel-agent isolation |

@@ -21,6 +21,7 @@ REQUIRED_FILES = [
     "GEMINI.md",
     "SECURITY.md",
     "SECRETS.md",
+    "docs/identity.md",
     "CODEOWNERS",
     ".env.example",
     "BACKLOG.md",
@@ -85,6 +86,7 @@ REQUIRED_FILES = [
     "docs/adr/TEMPLATE.md",
     "docs/adr/0001-record-architecture-decisions.md",
     "config/model-routing.example.json",
+    "config/secrets.example.json",
     "config/approved-models.example.json",
     "config/m365-publisher.example.json",
     "config/mandatory-principles.json",
@@ -193,6 +195,8 @@ MANDATORY_PHRASES = [
     "honest documentation",
     "documentation impact",
     "model/provider routing",
+    "centralized identity",
+    "central secrets manager",
     "governed mcp",
     "secrets are never committed",
     "architecture/security decisions",
@@ -210,6 +214,16 @@ MANDATORY_PHRASES = [
     "owasp llm",
     "github operationalization",
 ]
+
+ENV_EXAMPLE_KEY = re.compile(r"^[A-Z][A-Z0-9_]*$")
+SECRET_NAME = re.compile(r"(API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|CLIENT_SECRET)", re.IGNORECASE)
+SECRET_VALUE_PATTERNS = (
+    re.compile(r"\bAKIA[0-9A-Z]{16}\b"),
+    re.compile(r"\bgh[pousr]_[A-Za-z0-9_]{20,}\b"),
+    re.compile(r"\bsk-[A-Za-z0-9_-]{32,}\b"),
+    re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----"),
+    re.compile(r"\bxox[baprs]-[A-Za-z0-9-]{20,}\b"),
+)
 
 
 def _read(relative: str) -> str:
@@ -307,6 +321,158 @@ def check_mcp_configs() -> list[str]:
     for token in forbidden:
         if token in examples.lower():
             errors.append(f"MCP example appears to contain a secret-like token: {token}")
+    return errors
+
+
+def _strip_optional_quotes(value: str) -> str:
+    stripped = value.strip()
+    if len(stripped) >= 2 and stripped[0] == stripped[-1] and stripped[0] in {"'", '"'}:
+        return stripped[1:-1]
+    return stripped
+
+
+def _is_placeholder_value(value: str) -> bool:
+    stripped = _strip_optional_quotes(value)
+    lowered = stripped.lower()
+    if stripped == "":
+        return True
+    if stripped.startswith("<") and stripped.endswith(">"):
+        return True
+    return lowered in {"placeholder", "replace_me", "changeme", "example", "example-value"}
+
+
+def _looks_like_real_secret_value(value: str) -> bool:
+    return any(pattern.search(value) for pattern in SECRET_VALUE_PATTERNS)
+
+
+def check_env_example_shapes(root: Path = ROOT) -> list[str]:
+    """Fail if .env.example contains real-looking values instead of placeholders."""
+    path = root / ".env.example"
+    if not path.exists():
+        return ["missing required file: .env.example"]
+
+    errors = []
+    for line_number, raw_line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        line = raw_line.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith("export "):
+            line = line.removeprefix("export ").strip()
+        if "=" not in line:
+            errors.append(f".env.example:{line_number} must use KEY=<placeholder> shape")
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        if not ENV_EXAMPLE_KEY.fullmatch(key):
+            errors.append(f".env.example:{line_number} has invalid variable name: {key}")
+        if _looks_like_real_secret_value(value) or not _is_placeholder_value(value):
+            errors.append(f".env.example:{line_number} must contain only placeholder shapes, not real values")
+    return errors
+
+
+def _walk_strings(value: object) -> list[str]:
+    if isinstance(value, str):
+        return [value]
+    if isinstance(value, dict):
+        strings: list[str] = []
+        for key, item in value.items():
+            strings.extend(_walk_strings(key))
+            strings.extend(_walk_strings(item))
+        return strings
+    if isinstance(value, list):
+        strings = []
+        for item in value:
+            strings.extend(_walk_strings(item))
+        return strings
+    return []
+
+
+def check_secrets_config(root: Path = ROOT) -> list[str]:
+    """Fail if the example secret-provider config is not offline by default."""
+    path = root / "config" / "secrets.example.json"
+    if not path.exists():
+        return ["missing required file: config/secrets.example.json"]
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    errors = []
+    if not isinstance(data, dict):
+        return ["config/secrets.example.json must be a JSON object"]
+    if data.get("default_provider") != "auto":
+        errors.append('config/secrets.example.json must set default_provider to "auto"')
+    if data.get("resolution_order") != ["env", "keyring"]:
+        errors.append("config/secrets.example.json must default to offline env/keyring resolution")
+    providers = data.get("providers", {})
+    if not isinstance(providers, dict):
+        return [*errors, "config/secrets.example.json providers must be an object"]
+    for required in ("env", "keyring", "azure_key_vault"):
+        if required not in providers:
+            errors.append(f"config/secrets.example.json missing provider: {required}")
+    azure = providers.get("azure_key_vault", {})
+    if isinstance(azure, dict) and azure.get("enabled") is not False:
+        errors.append("config/secrets.example.json must keep azure_key_vault disabled by default")
+    for value in _walk_strings(data):
+        if _looks_like_real_secret_value(value):
+            errors.append("config/secrets.example.json contains a real-looking secret value")
+            break
+    return errors
+
+
+def _constant_string(node: ast.AST) -> str | None:
+    if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        return node.value
+    return None
+
+
+def _is_os_environ(node: ast.AST) -> bool:
+    return (
+        isinstance(node, ast.Attribute)
+        and node.attr == "environ"
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "os"
+    )
+
+
+def _secret_name_from_env_call(node: ast.Call) -> str | None:
+    if not node.args:
+        return None
+    if (
+        isinstance(node.func, ast.Attribute)
+        and node.func.attr == "get"
+        and _is_os_environ(node.func.value)
+    ):
+        return _constant_string(node.args[0])
+    if (
+        isinstance(node.func, ast.Attribute)
+        and node.func.attr == "getenv"
+        and isinstance(node.func.value, ast.Name)
+        and node.func.value.id == "os"
+    ):
+        return _constant_string(node.args[0])
+    return None
+
+
+def check_secret_access_patterns(root: Path = ROOT) -> list[str]:
+    """Fail when package code bypasses SecretProvider for secret-like environment names."""
+    package = root / "ai_dev_template"
+    if not package.exists():
+        return ["missing required package: ai_dev_template"]
+
+    errors = []
+    for path in sorted(package.glob("*.py")):
+        if path.name == "secrets.py":
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            secret_name = None
+            if isinstance(node, ast.Call):
+                secret_name = _secret_name_from_env_call(node)
+            elif isinstance(node, ast.Subscript) and _is_os_environ(node.value):
+                secret_name = _constant_string(node.slice)
+            if secret_name and SECRET_NAME.search(secret_name):
+                line_number = getattr(node, "lineno", 0)
+                errors.append(
+                    f"{path.relative_to(root)}:{line_number} must load {secret_name} through SecretProvider"
+                )
     return errors
 
 
@@ -475,6 +641,9 @@ def main() -> int:
         check_type_hints,
         check_backlog_human_only,
         check_mcp_configs,
+        check_env_example_shapes,
+        check_secrets_config,
+        check_secret_access_patterns,
         check_model_profiles,
         check_docs_site_config,
         check_agent_roster,

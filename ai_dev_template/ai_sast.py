@@ -13,6 +13,7 @@ from typing import Any, Protocol
 from urllib import error, request
 
 from ai_dev_template.sanitize import sanitize_for_llm
+from ai_dev_template.secrets import SecretProvider, get_secret
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ROUTING_PATH = ROOT / "config" / "model-routing.example.json"
@@ -577,11 +578,12 @@ class MythosScanner:
         budget: ScanBudget | None = None,
         root: Path = ROOT,
         timeout_seconds: int = 60,
+        secret_provider: SecretProvider | None = None,
     ) -> None:
         self.routing_path = routing_path or (
             PROJECT_ROUTING_PATH if PROJECT_ROUTING_PATH.exists() else DEFAULT_ROUTING_PATH
         )
-        self.api_key = api_key or os.environ.get("ANTHROPIC_API_KEY", "")
+        self.api_key = api_key or get_secret("ANTHROPIC_API_KEY", provider=secret_provider) or ""
         if not self.api_key:
             raise RuntimeError("MythosScanner requires ANTHROPIC_API_KEY; use MockScanner for offline runs")
         self.endpoint = endpoint
@@ -780,11 +782,12 @@ def select_scanner(
     active_budget = budget or scan_budget_from_config(config)
     if normalized == "mock":
         return MockScanner(budget=active_budget, root=root)
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    api_key = get_secret("ANTHROPIC_API_KEY")
+    if not api_key:
         return MockScanner(budget=active_budget, root=root)
 
     routing_value = config.get("model_routing", "config/model-routing.example.json")
     routing_path = Path(str(routing_value))
     if not routing_path.is_absolute():
         routing_path = root / routing_path
-    return MythosScanner(routing_path=routing_path, budget=active_budget, root=root)
+    return MythosScanner(routing_path=routing_path, api_key=api_key, budget=active_budget, root=root)

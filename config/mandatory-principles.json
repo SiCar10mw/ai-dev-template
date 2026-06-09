@@ -351,6 +351,20 @@
       "profile": "core",
       "tripwires": ["scripts/operationalize.sh", "docs/operationalize.md", "tests/unit/test_operationalize.py"],
       "negative_probe": "remove dry-run behavior, repo scoping, or confirmation prompt from operationalize.sh"
+    },
+    {
+      "id": "P51",
+      "statement": "Centralized identity management: human and machine identities come from a central identity provider; machine identities are managed, scoped, conditional-access gated, audited, and short-lived.",
+      "profile": "core",
+      "tripwires": ["docs/identity.md", "check_template_conformance.py:centralized identity", "docs/machine-user-pr-flow.md"],
+      "negative_probe": "replace central IdP guidance with local/ad-hoc accounts"
+    },
+    {
+      "id": "P52",
+      "statement": "Central secrets manager: secrets come from a central secrets manager at runtime; tracked files and plain `.env` files contain only placeholder shape, never real values.",
+      "profile": "core",
+      "tripwires": ["config/secrets.example.json", "ai_dev_template/secrets.py", "check_secret_access_patterns"],
+      "negative_probe": "hardcode a package secret env read or put a real value in .env.example"
     }
   ]
 }
