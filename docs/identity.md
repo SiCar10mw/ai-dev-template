@@ -15,6 +15,27 @@ This principle is mandatory and vendor-neutral:
 - activity is attributable in audit logs
 - high-impact writes still require human approval
 
+## Step 0 - Required Setup Wizard
+
+Run the terminal wizard before operationalizing the repository:
+
+```bash
+make setup-identity
+```
+
+The wizard requires two choices: one central identity provider and one secrets manager. It writes the secret-free local
+profiles `config/identity.json` and `config/secrets.json`, then prints provider-specific next steps. It does not create
+cloud resources, call provider CLIs, provision identities, upload secrets, or grant permissions.
+
+For CI or scripted onboarding, use non-interactive mode:
+
+```bash
+bash scripts/setup_identity.sh --non-interactive --dry-run --idp entra --secrets azure-key-vault
+```
+
+`--dry-run` means no external/cloud commands are invoked. The local profile files are still written so later scripts can
+verify that the required choice was made.
+
 ## Recommended Default
 
 For Azure and Microsoft 365 organizations, use Microsoft Entra ID as the default central identity provider. The
@@ -52,4 +73,5 @@ shape.
 ## No Provisioning
 
 This repository documents the standard and provides offline checks. It does not provision Microsoft Entra ID, Azure Key
-Vault, or any alternative cloud resource.
+Vault, or any alternative cloud resource. Follow the next steps printed by `make setup-identity` in the chosen provider
+only after a human has approved the relevant identity, secret, and permission changes.

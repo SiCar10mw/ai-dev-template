@@ -7,6 +7,7 @@ global state.
 
 `make operationalize` runs `scripts/operationalize.sh`. The script:
 
+- refuses to proceed until `make setup-identity` has recorded `config/identity.json` and `config/secrets.json`
 - prints a repo-scoped plan first
 - supports `--dry-run`
 - prompts for confirmation before any outward GitHub write
@@ -26,13 +27,22 @@ The script does not run `gh auth login`, change `gh` global config, write org se
    python -m pip install -e ".[dev]"
    ```
 
-3. Authenticate the GitHub CLI for the target repository:
+3. Complete step 0 for operationalization by choosing the identity provider and secrets manager:
+
+   ```bash
+   make setup-identity
+   ```
+
+   This is required. The wizard records secret-free local profile files and prints provider-specific next steps. It does
+   not provision cloud resources or upload secrets.
+
+4. Authenticate the GitHub CLI for the target repository:
 
    ```bash
    gh auth login
    ```
 
-4. Provide any repo secrets through environment variables or local keyring entries:
+5. Provide any repo secrets through environment variables or local keyring entries:
 
    ```bash
    export ANTHROPIC_API_KEY=...
@@ -55,7 +65,8 @@ Run the plan without API calls:
 bash scripts/operationalize.sh --dry-run --repo OWNER/REPO
 ```
 
-The dry run is idempotent and does not invoke `gh`.
+The dry run is idempotent and does not invoke `gh`, but it still refuses if identity/secrets setup has not been recorded.
+If you see the setup preflight failure, run `make setup-identity` first.
 
 ## Apply
 

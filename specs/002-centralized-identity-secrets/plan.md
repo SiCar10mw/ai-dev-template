@@ -5,7 +5,7 @@
 ## Summary
 
 Add mandatory centralized identity and central secrets manager standards, implement an offline-first pluggable secrets
-provider, and enforce the behavior through template conformance and tests.
+provider, and enforce the behavior through template conformance, setup onboarding, and tests.
 
 ## Technical Context
 
@@ -16,7 +16,7 @@ provider, and enforce the behavior through template conformance and tests.
 | Linting | `ruff` |
 | Security scan | Existing `bandit` and secret scans |
 | Dependency audit | Existing `pip-audit`; no required cloud SDK dependency added |
-| External writes | None |
+| External writes | None; setup prints provider next steps but makes no cloud calls |
 
 ## Constitution Check
 
@@ -29,11 +29,14 @@ provider, and enforce the behavior through template conformance and tests.
 | Source-of-truth authority | Pass | Standards, docs, config, code, and tests are committed |
 | Quality gates | Pass | `make check` required |
 | Honest docs | Pass | Mandatory principles and recommended tools are separated |
+| Human-gated high-impact changes | Pass | Wizard records choices only; provider provisioning remains human-run next steps |
 
 ## Test Strategy
 
 - Unit tests for EnvProvider, KeyringProvider, KeyVaultProvider, and fallback behavior.
 - Negative conformance tests for real `.env.example` values and direct secret-like environment access.
+- Unit tests for non-interactive setup profile writes, missing/invalid setup choices, provider CLI non-use, and
+  operationalize refusal before setup.
 - Full `make check` before handoff.
 
 ## Project Structure
@@ -41,13 +44,20 @@ provider, and enforce the behavior through template conformance and tests.
 ```text
 ai_dev_template/secrets.py
 config/secrets.example.json
+config/identity.example.json
 docs/identity.md
 SECRETS.md
 STANDARDS.md
+scripts/setup_identity.sh
+scripts/operationalize.sh
 tests/unit/test_secrets.py
+tests/unit/test_setup_identity.py
+tests/unit/test_operationalize.py
 ```
 
 ## Risks
 
 - Provider defaults could accidentally require cloud access; keep default order to EnvProvider and KeyringProvider.
 - Documentation could blur mandatory principles with vendor defaults; keep the two-tier language explicit.
+- Setup could be mistaken for provisioning; keep script output explicit that all provider commands are next steps and
+  are not executed.

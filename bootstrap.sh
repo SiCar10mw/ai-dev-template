@@ -115,9 +115,12 @@ PY
     python -m pip install -e ".[dev]"
   fi
 
+  bash scripts/setup_identity.sh
+
   if [[ "${BOOTSTRAP_TEST_SKIP_CHECK:-0}" != "1" ]]; then
     make check
   fi
 )
 
 echo "Bootstrap complete for $project_name at $target_dir."
+echo "Identity and secrets choices were recorded under $target_dir/config/."

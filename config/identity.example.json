@@ -1,0 +1,44 @@
+{
+  "schema_version": "0.1",
+  "selected_provider": "unconfigured",
+  "source_of_truth": "Central identity provider selection for humans and machine identities. This file documents provider shape only.",
+  "contains_credentials": false,
+  "providers": {
+    "microsoft_entra_id": {
+      "selected": false,
+      "display_name": "Microsoft Entra ID",
+      "recommended": true,
+      "purpose": "Recommended for Azure and Microsoft 365 organizations with managed identities, service principals, conditional access, and audit logs."
+    },
+    "okta": {
+      "selected": false,
+      "display_name": "Okta",
+      "recommended": false,
+      "purpose": "Central SSO and lifecycle management for organizations standardized on Okta."
+    },
+    "google_cloud_iam_workspace": {
+      "selected": false,
+      "display_name": "Google Cloud IAM / Workspace",
+      "recommended": false,
+      "purpose": "Central identity for Google Workspace or Google Cloud projects using service accounts and workload identity federation."
+    },
+    "aws_iam_identity_center": {
+      "selected": false,
+      "display_name": "AWS IAM Identity Center",
+      "recommended": false,
+      "purpose": "Central identity for AWS organizations using permission sets, roles, and short-lived sessions."
+    },
+    "local_dev_only": {
+      "selected": false,
+      "display_name": "local-dev-only",
+      "recommended": false,
+      "purpose": "Local development only. Not acceptable for shared, production, or externally writable systems."
+    }
+  },
+  "rules": [
+    "Do not create shared local accounts to bypass SSO or audit logging.",
+    "Use managed identities, service principals, GitHub Apps, workload identity, or equivalent scoped machine identities.",
+    "Keep credentials out of this file.",
+    "External writes remain human-gated."
+  ]
+}

@@ -1,4 +1,4 @@
-.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check owasp-llm no-secrets type-check lint test sast ai-sast ai-sast-verify-fix dependency-audit operationalize documents reference-docx project-brief-deck docs-site-build
+.PHONY: check conformance docs-impact docs-site-check generated-check profile-boundary corporate-profile-check owasp-llm no-secrets type-check lint test sast ai-sast ai-sast-verify-fix dependency-audit setup-identity operationalize documents reference-docx project-brief-deck docs-site-build
 
 check:
 	./scripts/ci_check.sh
@@ -50,6 +50,9 @@ ai-sast-verify-fix:
 
 dependency-audit:
 	pip-audit --requirement requirements.txt --disable-pip --no-deps
+
+setup-identity:
+	bash scripts/setup_identity.sh
 
 operationalize:
 	bash scripts/operationalize.sh

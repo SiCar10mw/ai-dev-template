@@ -21,6 +21,18 @@
 - [x] T011 Run `make check`.
 - [x] T012 Prepare handoff evidence and stop for human approval.
 
+## Phase 4 - Required Setup Wizard Addendum
+
+- [x] T013 Add `config/identity.example.json` and extend `config/secrets.example.json` with selectable manager metadata.
+- [x] T014 Add failing setup and operationalize tests for required choices, dry-run profile writes, no provider CLI
+  calls, and refusal before setup.
+- [x] T015 Implement `scripts/setup_identity.sh` with interactive required prompts and non-interactive flags.
+- [x] T016 Add `make setup-identity`.
+- [x] T017 Run setup from `bootstrap.sh` during onboarding.
+- [x] T018 Gate `scripts/operationalize.sh` on `config/identity.json` and `config/secrets.json`.
+- [x] T019 Update identity, operationalize, and first-run docs to make setup step 0.
+- [x] T020 Run focused tests and `make check`.
+
 ## Dependency Order
 
 Tests and acceptance criteria come before implementation. Verification comes after implementation. Merge comes only after

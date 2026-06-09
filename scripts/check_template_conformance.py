@@ -86,6 +86,7 @@ REQUIRED_FILES = [
     "docs/adr/TEMPLATE.md",
     "docs/adr/0001-record-architecture-decisions.md",
     "config/model-routing.example.json",
+    "config/identity.example.json",
     "config/secrets.example.json",
     "config/approved-models.example.json",
     "config/m365-publisher.example.json",
@@ -124,6 +125,7 @@ REQUIRED_FILES = [
     "scripts/check_no_secrets.py",
     "scripts/check_owasp_llm.py",
     "scripts/check_agent_roster.py",
+    "scripts/setup_identity.sh",
     "scripts/operationalize.sh",
     "scripts/claim_backlog_item.py",
     "scripts/dispatch_agents.py",
@@ -399,12 +401,25 @@ def check_secrets_config(root: Path = ROOT) -> list[str]:
         return ["config/secrets.example.json must be a JSON object"]
     if data.get("default_provider") != "auto":
         errors.append('config/secrets.example.json must set default_provider to "auto"')
+    if data.get("selected_manager") != "unconfigured":
+        errors.append('config/secrets.example.json must set selected_manager to "unconfigured"')
+    if data.get("contains_credentials") is not False:
+        errors.append("config/secrets.example.json must declare contains_credentials false")
     if data.get("resolution_order") != ["env", "keyring"]:
         errors.append("config/secrets.example.json must default to offline env/keyring resolution")
     providers = data.get("providers", {})
     if not isinstance(providers, dict):
         return [*errors, "config/secrets.example.json providers must be an object"]
-    for required in ("env", "keyring", "azure_key_vault"):
+    for required in (
+        "env",
+        "keyring",
+        "azure_key_vault",
+        "hashicorp_vault",
+        "aws_secrets_manager",
+        "gcp_secret_manager",
+        "onepassword_doppler",
+        "os_keyring",
+    ):
         if required not in providers:
             errors.append(f"config/secrets.example.json missing provider: {required}")
     azure = providers.get("azure_key_vault", {})
@@ -413,6 +428,39 @@ def check_secrets_config(root: Path = ROOT) -> list[str]:
     for value in _walk_strings(data):
         if _looks_like_real_secret_value(value):
             errors.append("config/secrets.example.json contains a real-looking secret value")
+            break
+    return errors
+
+
+def check_identity_config(root: Path = ROOT) -> list[str]:
+    """Fail if the identity-provider example config is missing required onboarding choices."""
+    path = root / "config" / "identity.example.json"
+    if not path.exists():
+        return ["missing required file: config/identity.example.json"]
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    errors = []
+    if not isinstance(data, dict):
+        return ["config/identity.example.json must be a JSON object"]
+    if data.get("selected_provider") != "unconfigured":
+        errors.append('config/identity.example.json must set selected_provider to "unconfigured"')
+    if data.get("contains_credentials") is not False:
+        errors.append("config/identity.example.json must declare contains_credentials false")
+    providers = data.get("providers", {})
+    if not isinstance(providers, dict):
+        return [*errors, "config/identity.example.json providers must be an object"]
+    for required in (
+        "microsoft_entra_id",
+        "okta",
+        "google_cloud_iam_workspace",
+        "aws_iam_identity_center",
+        "local_dev_only",
+    ):
+        if required not in providers:
+            errors.append(f"config/identity.example.json missing provider: {required}")
+    for value in _walk_strings(data):
+        if _looks_like_real_secret_value(value):
+            errors.append("config/identity.example.json contains a real-looking secret value")
             break
     return errors
 
@@ -630,6 +678,43 @@ def check_github_native_operationalization() -> list[str]:
     return errors
 
 
+def check_identity_setup_wizard() -> list[str]:
+    """Fail if required identity/secrets onboarding is no longer wired into setup and operationalization."""
+    makefile = _read("Makefile")
+    bootstrap = _read("bootstrap.sh")
+    operationalize = _read("scripts/operationalize.sh")
+    setup = _read("scripts/setup_identity.sh")
+    docs = _read("docs/identity.md") + _read("docs/operationalize.md") + _read("docs/first-run.md")
+    errors = []
+
+    required_setup_markers = (
+        "--non-interactive",
+        "--idp",
+        "--secrets",
+        "Choose your IDENTITY PROVIDER",
+        "Choose your SECRETS MANAGER",
+        "No cloud calls were made",
+        "config/identity.json",
+        "config/secrets.json",
+    )
+    for marker in required_setup_markers:
+        if marker not in setup:
+            errors.append(f"scripts/setup_identity.sh missing required marker: {marker}")
+
+    if "setup-identity:" not in makefile or "scripts/setup_identity.sh" not in makefile:
+        errors.append("Makefile must expose make setup-identity")
+    if "scripts/setup_identity.sh" not in bootstrap:
+        errors.append("bootstrap.sh must run setup_identity.sh during onboarding")
+    if (
+        "make setup-identity" not in operationalize
+        or "identity/secrets profile has not been chosen" not in operationalize
+    ):
+        errors.append("scripts/operationalize.sh must refuse before setup-identity is run")
+    if "make setup-identity" not in docs or "step 0" not in docs.lower():
+        errors.append("identity, operationalize, and first-run docs must reference setup-identity as step 0")
+    return errors
+
+
 def main() -> int:
     errors = []
     for check in (
@@ -642,6 +727,7 @@ def main() -> int:
         check_backlog_human_only,
         check_mcp_configs,
         check_env_example_shapes,
+        check_identity_config,
         check_secrets_config,
         check_secret_access_patterns,
         check_model_profiles,
@@ -651,6 +737,7 @@ def main() -> int:
         check_gitleaks_and_mypy,
         check_spec_security_left,
         check_github_native_operationalization,
+        check_identity_setup_wizard,
     ):
         errors.extend(check())
 

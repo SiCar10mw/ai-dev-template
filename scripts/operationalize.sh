@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="${AI_DEV_TEMPLATE_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+CONFIG_DIR="$REPO_ROOT/config"
+
 DRY_RUN=0
 REPO="${GITHUB_REPOSITORY:-}"
 BRANCH="${AI_DEV_DEFAULT_BRANCH:-main}"
@@ -34,6 +38,8 @@ Usage: scripts/operationalize.sh [--dry-run] [--repo OWNER/REPO] [--branch BRANC
 Repo-scoped GitHub operationalization for this template. The script prints a plan first and prompts for confirmation
 before outward writes. It assumes `gh auth login` has already been run for the target repository.
 
+Before operationalization, run `make setup-identity` to choose the repo-local identity and secrets profile.
+
 Options:
   --dry-run          Print the plan without invoking gh or making API calls.
   --repo OWNER/REPO  Target repository. Defaults to GITHUB_REPOSITORY or origin remote.
@@ -54,6 +60,47 @@ detect_repo_from_origin() {
     return 0
   fi
   return 1
+}
+
+require_identity_secrets_profile() {
+  local identity_config="$CONFIG_DIR/identity.json"
+  local secrets_config="$CONFIG_DIR/secrets.json"
+  if [[ ! -s "$identity_config" || ! -s "$secrets_config" ]]; then
+    cat >&2 <<EOF
+FAIL: identity/secrets profile has not been chosen.
+Expected:
+- $identity_config
+- $secrets_config
+
+run \`make setup-identity\` first.
+EOF
+    exit 2
+  fi
+
+  AI_DEV_IDENTITY_CONFIG="$identity_config" AI_DEV_SECRETS_CONFIG="$secrets_config" python3 - <<'PY'
+import json
+import os
+import sys
+from pathlib import Path
+
+checks = (
+    ("AI_DEV_IDENTITY_CONFIG", "selected_provider", "identity"),
+    ("AI_DEV_SECRETS_CONFIG", "selected_manager", "secrets"),
+)
+for env_name, selected_key, label in checks:
+    path = Path(os.environ[env_name])
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"FAIL: invalid {label} profile {path}: {exc}", file=sys.stderr)
+        raise SystemExit(2)
+    if not isinstance(data, dict) or not str(data.get(selected_key, "")).strip():
+        print(f"FAIL: {label} profile {path} must contain {selected_key}; run `make setup-identity` first.", file=sys.stderr)
+        raise SystemExit(2)
+    if data.get("contains_credentials") is True:
+        print(f"FAIL: {label} profile {path} must not contain credentials.", file=sys.stderr)
+        raise SystemExit(2)
+PY
 }
 
 env_has_value() {
@@ -341,6 +388,7 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+require_identity_secrets_profile
 require_repo
 print_plan
 

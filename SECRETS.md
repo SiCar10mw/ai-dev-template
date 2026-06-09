@@ -10,6 +10,22 @@ Secret retrieval uses the same two-tier split as the rest of the template:
 
 See `docs/identity.md` for the related centralized identity requirement.
 
+## Step 0 - Required Setup Wizard
+
+Run the setup wizard before operationalization:
+
+```bash
+make setup-identity
+```
+
+The wizard records the selected central identity provider and secrets manager in secret-free local files:
+
+- `config/identity.json`
+- `config/secrets.json`
+
+It prints provider-specific next steps, but it does not create vaults, upload secrets, grant permissions, or call cloud
+CLIs. `scripts/operationalize.sh` refuses to proceed until those profile files exist.
+
 ## Three-Layer Secret Gate
 
 | Layer | Default Tool |
@@ -25,8 +41,8 @@ The lightweight `scripts/check_no_secrets.py` scan also runs in `make check` as 
 - Use a central secrets manager, managed identity, OIDC, OAuth, or JWT flow.
 - `.env.example` shows placeholder shape only; it never contains real values.
 - Runtime code resolves logical names through `ai_dev_template.secrets.SecretProvider`.
-- `config/secrets.example.json` documents provider selection. Its default order is EnvProvider then KeyringProvider so
-  CI remains offline and deterministic when no central manager is configured.
+- `config/secrets.example.json` documents provider selection. Its default order is EnvProvider then KeyringProvider so CI
+  remains offline and deterministic after the setup wizard records the selected manager.
 - Use OS keyring for local development only.
 - Do not store secrets in tracked `.env`, JSON, YAML, TOML, markdown, generated artifacts, logs, or screenshots.
 

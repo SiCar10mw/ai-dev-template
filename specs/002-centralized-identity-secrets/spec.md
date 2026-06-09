@@ -29,6 +29,30 @@ provider-based secret access offline.
 4. Given no cloud configuration, when tests run, then EnvProvider and KeyringProvider resolve offline and CI makes no
    Key Vault call.
 
+### User Story 2 - Required Setup Wizard (P1)
+
+As a project maintainer, I am walked through identity and secrets choices during onboarding before operationalization can
+run, so the documented standard becomes an explicit repo-local setup decision instead of optional reading.
+
+**Why this priority**: Identity and secret-manager choices affect every later external write. The template must force an
+auditable choice before GitHub operationalization, while still making no cloud calls or provisioning resources.
+
+**Independent Test**: Run the setup wizard in `--non-interactive --dry-run` mode and assert it writes
+`config/identity.json` and `config/secrets.json`, rejects missing/invalid choices, and does not invoke provider CLIs.
+Run operationalize dry-run without those profiles and assert it refuses before invoking `gh`.
+
+**Acceptance Scenarios**:
+
+1. Given no profile files, when `scripts/operationalize.sh --dry-run --repo OWNER/REPO` runs, then it fails with
+   "run `make setup-identity` first" and does not invoke `gh`.
+2. Given non-interactive setup flags, when `scripts/setup_identity.sh --non-interactive --dry-run --idp entra --secrets
+   azure-key-vault` runs, then it writes the selected profile files and prints Entra/Key Vault next steps without cloud
+   calls.
+3. Given a missing or invalid required choice, when setup runs in non-interactive mode, then it exits non-zero and writes
+   no active profile files.
+4. Given bootstrap onboarding, when a new project is created, then the identity/secrets setup wizard runs before the
+   initial check gate.
+
 ## Requirements
 
 ### Functional Requirements
@@ -45,6 +69,15 @@ provider-based secret access offline.
   central manager is configured.
 - **FR-007**: Template conformance must reject real values in `.env.example` and direct package secret reads that bypass
   the provider interface.
+- **FR-008**: The system must provide `scripts/setup_identity.sh` and `make setup-identity` as a terminal wizard with
+  required identity-provider and secrets-manager prompts.
+- **FR-009**: The setup wizard must support `--non-interactive --idp <x> --secrets <y>` and `--dry-run`.
+- **FR-010**: The setup wizard must write secret-free `config/identity.json` and `config/secrets.json` profiles derived
+  from example config files.
+- **FR-011**: The setup wizard must print provider-specific next steps and make no cloud calls or provisioning changes.
+- **FR-012**: `scripts/operationalize.sh` must refuse to proceed until both setup profiles exist and must tell users to
+  run `make setup-identity` first.
+- **FR-013**: `bootstrap.sh` must run the setup wizard as part of onboarding before the initial check gate.
 
 ## Threat Model and Abuse Cases
 
@@ -60,6 +93,8 @@ provider-based secret access offline.
 2. A developer bypasses the provider interface and hardcodes or directly reads a long-lived credential.
 3. A Key Vault adapter is selected in CI and unexpectedly attempts a cloud call.
 4. A machine-user identity uses static credentials or broad privileges instead of managed, audited access.
+5. A contributor skips setup and operationalizes a repository without an explicit identity/secrets decision.
+6. A setup script invokes provider CLIs or provisions cloud resources before a human approves those actions.
 
 ### Attack Tree
 
@@ -68,6 +103,8 @@ provider-based secret access offline.
   - Bypass provider resolution with direct environment reads.
   - Replace central identity with local/ad-hoc accounts.
   - Configure a cloud provider as mandatory for offline checks.
+  - Bypass the setup wizard and run external-write operationalization.
+  - Smuggle provisioning into an onboarding script.
 
 ### Required Mitigations
 
@@ -76,6 +113,8 @@ provider-based secret access offline.
 - Offline default provider chain.
 - Key Vault adapter requires explicit configuration or injected test client.
 - Documentation keeps mandatory principles separate from recommended vendor defaults.
+- Required setup profiles gate operationalization.
+- Setup wizard tests fake provider CLIs and assert no provider command is invoked.
 
 ### Key Entities
 
@@ -89,8 +128,10 @@ provider-based secret access offline.
   tripwires pass offline.
 - **SC-002**: `make check` passes locally.
 - **SC-003**: Current behavior is documented without provisioning cloud resources.
+- **SC-004**: Setup and operationalization tests pass offline, including non-interactive dry-run and refusal paths.
 
 ## Assumptions
 
 - No cloud resources are provisioned by this change.
 - Azure Key Vault is a recommended adapter example only unless a project explicitly configures it.
+- `--dry-run` for setup means no external/cloud calls; it still records the local repo profile for CI and scripts.

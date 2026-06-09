@@ -9,6 +9,14 @@ defaults to its MockScanner, so you don't need model API keys for this run.
 - [ ] Your AI cockpit is signed in (GitHub Copilot in VS Code, or Claude Code / Codex CLI)
 - [ ] `python3 --version` → 3.11+ · `git` and `gh` both work · `gh auth login` done
 
+## Step 0 — Choose Identity + Secrets
+From the repo root:
+```bash
+make setup-identity
+```
+✅ **Expected:** you must choose one identity provider and one secrets manager. The wizard writes
+`config/identity.json` + `config/secrets.json` and prints provider-specific next steps. It makes no cloud calls.
+
 ## Phase 1 — Prove `local == CI`
 From the repo root:
 ```bash
@@ -22,11 +30,12 @@ pip-audit. ❌ **If red:** capture the exact failing line — that's finding #1.
 ## Phase 2 — Operationalize
 ```bash
 cat docs/operationalize.md          # read it first
-make operationalize --dry-run       # or ./scripts/operationalize.sh --dry-run
+bash scripts/operationalize.sh --dry-run --repo OWNER/REPO
 make operationalize                 # confirm at the prompt
 ```
-✅ **Expected:** the dry-run prints a plan and writes nothing; the real run enables branch protection +
-required checks + the merge queue on your repo (secrets are set only if present in your env/keyring).
+✅ **Expected:** the dry-run prints a plan and invokes no `gh` calls; if setup was skipped, it refuses with
+`run make setup-identity first`. The real run enables branch protection + required checks + the merge queue on your repo
+(secrets are set only if present in your env/keyring).
 
 ## Phase 3 — Drive one feature from your AI tool
 In your cockpit's **agent mode**, pick a model (Claude / Gemini 3.1 Pro / GPT-Codex — this exercises

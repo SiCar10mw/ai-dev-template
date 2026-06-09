@@ -15,6 +15,8 @@ def run_bootstrap(tmp_path: Path, project_name: str) -> subprocess.CompletedProc
             str(tmp_path),
             "Machine User",
             "machine-user@example.invalid",
+            "1",
+            "1",
             "",
         )
     )
@@ -54,6 +56,8 @@ def test_bootstrap_excludes_template_git_history_and_ignored_artifacts(tmp_path:
     assert git_stdout(target, "config", "--local", "user.name") == "Machine User"
     assert git_stdout(target, "config", "--local", "user.email") == "machine-user@example.invalid"
     assert git_stdout(target, "config", "--local", "core.hooksPath") == ".githooks"
+    assert (target / "config" / "identity.json").is_file()
+    assert (target / "config" / "secrets.json").is_file()
 
     assert not (target / ".coverage").exists()
     assert not (target / ".mypy_cache").exists()
