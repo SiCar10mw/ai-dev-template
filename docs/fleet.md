@@ -1,5 +1,35 @@
 # Harnessing The Three
 
+## The Atom and the Molecules — the mental model
+
+Read this before the reference below. The fleet has exactly **one primitive**, and everything else is built
+from it.
+
+**The atom — `spawn(model, task)`.** One model does one task and returns one result. It is the smallest
+*complete* unit of work in the system: split it — a model with no task, or a task with no model — and you have
+*nothing*, not a smaller piece of work. That irreducibility is why we call it the **atom**. We define it
+**once**, correctly (the dispatch `claude -p` / `gemini -p` / `codex exec`, `shell=False`, the missing-CLI
+errors), and everything above it inherits that correctness for free.
+
+**The molecules — built from atoms.**
+- `fan_out(task, models)` = the *same* atom run with different models, concurrently → compare the three.
+- `parallel(jobs)` = *many* atoms (different tasks) run through a bounded worker pool.
+
+A future judge-panel is atoms + a judging atom; a loop-until-done is atoms in a loop. None of them reimplement
+dispatch — they **orchestrate** the atom.
+
+**Why the metaphor matters (chemistry).** Atoms → molecules → compounds (full workflows: review → verify →
+patch). Pick the *right* atom — the irreducible "model × task," nothing more — and every molecule above it is
+cheap and automatically correct. Pick the *wrong* atom (too big, or leaky) and every molecule inherits the
+flaw. That is why building the parallel layer was **thin**: the atom was already right, so `fan_out` and
+`parallel` are just "loop over the atom in a thread pool."
+
+**The one new idea the molecules add: isolation.** Many atoms *reading* is safe. Many atoms *writing* the
+same files would collide — so each file-mutating worker gets its own git **worktree** (own folder + branch,
+shared history). Read-only workers skip it. Isolation-by-copy is what makes parallel *writing* safe.
+
+---
+
 ## Current Behavior
 
 `ai_dev_template.spawn` is the single-dispatch execution primitive for the first-class model fleet. It turns a model
