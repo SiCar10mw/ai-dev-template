@@ -46,7 +46,14 @@ class ModelDispatchError(RuntimeError):
     """Raised when a model CLI is present but the dispatch fails."""
 
 
-def spawn(model: str, task: str, *, timeout: int = 300, runner: Runner = subprocess.run) -> str:
+def spawn(
+    model: str,
+    task: str,
+    *,
+    timeout: int = 300,
+    runner: Runner = subprocess.run,
+    cwd: Path | str | None = None,
+) -> str:
     """Run a single task through the requested model CLI and return stdout."""
     normalized = model.strip().lower()
     if normalized not in ADAPTER_COMMANDS:
@@ -54,15 +61,17 @@ def spawn(model: str, task: str, *, timeout: int = 300, runner: Runner = subproc
         raise ValueError(f"unknown model {model!r}; expected one of: {valid}")
 
     argv = [*ADAPTER_COMMANDS[normalized], task]
+    run_kwargs: dict[str, Any] = {
+        "capture_output": True,
+        "check": False,
+        "shell": False,
+        "text": True,
+        "timeout": timeout,
+    }
+    if cwd is not None:
+        run_kwargs["cwd"] = cwd
     try:
-        result = runner(
-            argv,
-            capture_output=True,
-            check=False,
-            shell=False,
-            text=True,
-            timeout=timeout,
-        )
+        result = runner(argv, **run_kwargs)
     except FileNotFoundError as exc:
         raise ModelCliUnavailableError(_missing_cli_message(normalized)) from exc
 
